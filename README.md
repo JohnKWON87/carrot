@@ -204,6 +204,13 @@ List<Item> findAllByCategoryAndStatus(String category, ItemSellStatus status);
 - 실제 서비스 구조 이해 및 벤치마킹 능력
 - 벤치마킹으로 인해 짧은 프로젝트기간이었지만 팀원들간의 협동심을 한번더 깨우친 프로젝트
 
+- ## 👥 팀원
+- 태재우 팀장 : 회의록, 명세서, 정의서 및 카테고리 설정 구현
+- 권혁민 : 관리자 기능, css구현 및 전체적인 코드 관리
+- 박정대 : 판매자에게 거래 방식 제안 기능 구현
+- 손경훈 : 회원가입 기능 및 회원 정보 관리 기능 구현
+- 이상우 : 상품 거래 기능, PPT 제작 및 발표
+
 ## 📧 문의
 
 - Email: johnkwon33@gmail.com
