@@ -21,7 +21,7 @@
 - Thymeleaf
 
 ### Database
-- MySQL 8.0
+- MySQL WorkBench
 
 ### Frontend
 - HTML5 / CSS3
