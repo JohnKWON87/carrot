@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드 - 실시간 현황</title>
+    <meta http-equiv="refresh" content="30">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .stat-trend {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #4CAF50;
+        }
+
+        .info-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .info-section h2 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .refresh-indicator {
+            text-align: center;
+            color: white;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <div class="header">
+        <h1><span class="live-indicator"></span>실시간 사이트 현황</h1>
+        <p>관리자 대시보드 - 자동 새로고침 (30초)</p>
+        <p th:text="'관리자: ' + ${user.username}">관리자</p>
+    </div>
+
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+    <div class="stats-grid">
+        <!-- 총 회원 수 -->
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-number" th:text="${totalUsers}">0</div>
+            <div class="stat-label">총 회원 수</div>
+            <div class="stat-trend">전체 가입 회원</div>
+        </div>
+
+        <!-- 총 상품 수 -->
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-number" th:text="${totalItems}">0</div>
+            <div class="stat-label">총 상품 수</div>
+            <div class="stat-trend">등록된 모든 상품</div>
+        </div>
+
+        <!-- 오늘 등록된 상품 -->
+        <div class="stat-card">
+            <div class="stat-icon">🆕</div>
+            <div class="stat-number" th:text="${todayItems}">0</div>
+            <div class="stat-label">오늘 등록된 상품</div>
+            <div class="stat-trend">최근 24시간</div>
+        </div>
+
+        <!-- 판매중인 상품 -->
+        <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-number" th:text="${activeItems}">0</div>
+            <div class="stat-label">판매중인 상품</div>
+            <div class="stat-trend">현재 활성 상태</div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h2>빠른 관리 메뉴</h2>
+        <div class="action-buttons">
+            <a href="/admin" class="btn btn-primary">관리자 메인</a>
+            <a href="/admin/users" class="btn btn-secondary">회원 관리</a>
+            <a href="/admin/products" class="btn btn-secondary">상품 관리</a>
+            <a href="/admin/logs" class="btn btn-secondary">로그 확인</a>
+            <a href="/admin/settings" class="btn btn-secondary">시스템 설정</a>
+        </div>
+    </div>
+
+    <div class="refresh-indicator">
+        <span class="live-indicator"></span>
+        이 페이지는 30초마다 자동으로 새로고침됩니다
+    </div>
+</div>
+</body>
+</html>

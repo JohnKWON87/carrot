@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품 목록 - 중고마켓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff6b35;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 107, 53, 0.1);
+        }
+
+        .register-btn {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .register-btn:hover {
+            background: linear-gradient(135deg, #e55a2b, #e8831a);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .page-title {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .items-info {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .items-count {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .sort-options select {
+            padding: 0.5rem 1rem;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .item-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #666;
+            position: relative;
+        }
+
+        .item-status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-sell {
+            background: #27ae60;
+        }
+
+        .status-reserved {
+            background: #f39c12;
+        }
+
+        .status-sold {
+            background: #95a5a6;
+        }
+
+        .item-content {
+            padding: 1.5rem;
+        }
+
+        .item-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .item-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .item-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .item-location {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .item-stats {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .item-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        .pagination a, .pagination span {
+            padding: 0.8rem 1.2rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination a:hover {
+            background: #ff6b35;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .pagination .current {
+            background: #ff6b35;
+            color: white;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-text {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            border: none;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        @media (max-width: 768px) {
+            .items-info {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo">♻️ 중고마켓</a>
+        <div class="nav-links">
+            <span>안녕하세요, <strong th:text="${username}">사용자</strong>님!</span>
+            <a href="/">홈</a>
+            <a href="/search">검색</a>
+            <a href="/wishlist">관심상품</a>
+            <a href="/item/register" class="register-btn">상품 등록</a>
+            <a href="/logout">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h1 class="page-title">전체 상품</h1>
+        <p class="page-subtitle">믿을 수 있는 이웃들과 함께하는 중고거래</p>
+    </div>
+
+    <!-- 에러 메시지 -->
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <!-- 상품 정보 및 정렬 -->
+    <div class="items-info" th:if="${items != null and !items.isEmpty()}">
+        <div class="items-count">
+            총 <strong th:text="${totalItems}">0</strong>개의 상품
+        </div>
+        <div class="sort-options">
+            <select onchange="alert('정렬 기능은 4단계에서 구현됩니다')">
+                <option>최신순</option>
+                <option>가격 낮은순</option>
+                <option>가격 높은순</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 상품 목록 -->
+    <div th:if="${items != null and !items.isEmpty()}">
+        <div class="items-grid">
+            <a th:each="item : ${items}"
+               th:href="@{/item/{id}(id=${item.id})}"
+               class="item-card">
+                <div class="item-image">
+                    <img th:if="${item.imageUrl}"
+                         th:src="@{${item.imageUrl}}"
+                         alt="상품 이미지"
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                    <span th:unless="${item.imageUrl}">📦</span>
+                    <div class="item-status status-sell"
+                         th:classappend="${item.sellStatus.name() == 'SELL' ? 'status-sell' :
+                                        (item.sellStatus.name() == 'RESERVED' ? 'status-reserved' : 'status-sold')}"
+                         th:text="${item.sellStatus.name() == 'SELL' ? '판매중' :
+                                  (item.sellStatus.name() == 'RESERVED' ? '예약중' : '판매완료')}">
+                        판매중
+                    </div>
+                </div>
+                <div class="item-content">
+                    <h3 class="item-title" th:text="${item.title}">상품 제목</h3>
+                    <p class="item-description" th:text="${item.description}">상품 설명</p>
+                    <div class="item-price" th:text="${item.formattedPrice}">가격</div>
+                    <div class="item-meta">
+                        <div class="item-location">
+                            📍 <span th:text="${item.location}">위치</span>
+                        </div>
+                        <div class="item-stats">
+                            <span>👀 <span th:text="${item.viewCount}">0</span></span>
+                            <span>❤️ <span th:text="${item.wishCount}">0</span></span>
+                        </div>
+                    </div>
+                    <div style="color: #999; font-size: 0.8rem; margin-top: 0.5rem;"
+                         th:text="${item.timeAgo}">시간</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <div class="pagination" th:if="${totalPages > 1}">
+            <a th:if="${currentPage > 0}"
+               th:href="@{/item/list(page=${currentPage - 1})}">이전</a>
+
+            <span th:each="page : ${#numbers.sequence(0, totalPages - 1)}"
+                  th:if="${page >= currentPage - 2 and page <= currentPage + 2}">
+                <a th:if="${page != currentPage}"
+                   th:href="@{/item/list(page=${page})}"
+                   th:text="${page + 1}">1</a>
+                <span th:if="${page == currentPage}"
+                      class="current"
+                      th:text="${page + 1}">1</span>
+            </span>
+
+            <a th:if="${currentPage < totalPages - 1}"
+               th:href="@{/item/list(page=${currentPage + 1})}">다음</a>
+        </div>
+    </div>
+
+    <!-- 빈 상태 -->
+    <div th:if="${items == null or items.isEmpty()}" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h2 class="empty-title">등록된 상품이 없습니다</h2>
+        <p class="empty-text">첫 번째 상품을 등록해보세요!</p>
+        <a href="/item/register" class="register-btn" style="display: inline-block; padding: 1rem 2rem; border-radius: 25px; font-weight: 600; text-decoration: none;">상품 등록하기</a>
+    </div>
+</div>
+</body>
+</html>

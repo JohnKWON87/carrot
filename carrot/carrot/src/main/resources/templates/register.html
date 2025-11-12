@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>회원가입</title></head>
+<body>
+<h2>회원가입</h2>
+<div th:if="${error}" th:text="${error}" style="color:red;"></div>
+<form method="post" th:action="@{/register}">
+    <div>
+        <label>이메일</label>
+        <input type="email" name="email" th:value="${form.email}"/>
+    </div>
+    <div>
+        <label>비밀번호</label>
+        <input type="password" name="password"/>
+    </div>
+    <div>
+        <label>역할</label>
+        <select name="role" th:value="${form.role}">
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+        </select>
+    </div>
+    <button type="submit">가입</button>
+</form>
+</body>
+</html>

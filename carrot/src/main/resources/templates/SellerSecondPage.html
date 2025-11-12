@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"><!-- [FIX] 타임리프 네임스페이스 추가 -->
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>판매 메뉴 (팝업 에디터 · 더미데이터)</title>
+    <style>
+        :root{
+          --bg:#fff; --surface:#fff; --line:rgba(2,6,23,.08);
+          --shadow:0 6px 24px rgba(2,6,23,.06), 0 2px 6px rgba(2,6,23,.05);
+          --muted:#64748b; --text:#0f172a; --accent:#22d3ee; --accent-2:#3b82f6;
+          --ring:rgba(59,130,246,.24); --ok:#10b981;
+        }
+        *{box-sizing:border-box}
+        body{margin:0;background:var(--bg);color:var(--text);
+          font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,
+          "Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
+        header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);
+          border-bottom:1px solid var(--line);box-shadow:0 6px 20px rgba(2,6,23,.06)}
+        .bar{max-width:980px;margin:0 auto;padding:14px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+        .tag{font-weight:800;color:var(--accent-2)}
+        .container{max-width:980px;margin:24px auto 40px;padding:0 20px}
+        h1{font-size:22px;margin:0 0 8px}
+        .subtitle{font-size:13px;color:var(--muted);margin:0 0 18px}
+
+        /* 상단 물품ID 블록 (여러개면 2 cm 간격) */
+        .item-head{
+          border:1px solid var(--line);border-radius:14px;background:var(--surface);
+          padding:12px 14px;box-shadow:var(--shadow);
+        }
+        .item-head + .item-head{ margin-top:2cm; } /* 요구: 2cm 간격 */
+        .item-line{
+          font-size:16px;color:#334155;font-weight:700;display:flex;gap:8px;align-items:center;margin:0 0 6px;
+        }
+        .item-line .muted{font-weight:600;color:#64748b}
+        .item-title{font-size:14px;color:#475569;margin-left:2px}
+
+        /* 요청 리스트 */
+        .offer-list{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+        .offer-row{
+          display:flex;gap:12px;align-items:center;justify-content:space-between;
+          border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 12px;
+        }
+        .offer-left{display:flex;gap:10px;align-items:center;min-width:0}
+        .num{min-width:28px;height:28px;border-radius:999px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700}
+        .badge{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+        .badge.direct{background:linear-gradient(180deg,rgba(16,185,129,.12),rgba(16,185,129,.08));color:#064e3b;border-color:rgba(16,185,129,.35)}
+        .badge.shipping{background:linear-gradient(180deg,rgba(59,130,246,.12),rgba(34,211,238,.10));color:#0b3b5e;border-color:rgba(59,130,246,.35)}
+        .summary{font-size:14px;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:520px}
+        .view-btn{
+          cursor:pointer;border:none;border-radius:10px;padding:8px 12px;font-weight:700;
+          background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#00131a;
+          box-shadow:0 2px 6px rgba(2,6,23,.05);
+        }
+        .hint{font-size:12px;color:#6b7280}
+
+        /* 팝업(모달) */
+        .modal{position:fixed;inset:0;background:rgba(2,6,23,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:60}
+        .panel{
+          width:820px; max-width:100%; max-height:85vh;
+          background:#fff; border:1px solid var(--line); border-radius:16px;
+          display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(2,6,23,.25);
+        }
+        .panel-header{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .panel-title{margin:0;font-size:16px}
+        .close-x{cursor:pointer;border:none;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+        .panel-body{padding:14px 16px;overflow:auto;flex:1 1 auto}
+        .edit-summary{
+          display:flex;align-items:center;justify-content:space-between;gap:12px;
+          padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:12px;
+        }
+        .edit-left{display:flex;gap:10px;align-items:center;min-width:0}
+        .edit-title{font-weight:700}
+        .edit-sub{font-size:13px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px}
+
+        .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;align-items:end}
+        .field{grid-column:span 12}
+        @media (min-width:760px){
+          .field.half{grid-column:span 6}
+          .field.third{grid-column:span 4}
+        }
+        label{font-size:13px;color:#64748b}
+        input[type="date"],input[type="time"],input[type="text"],input[type="number"]{
+          width:100%;background:#fff;color:#0f172a;border:1px solid var(--line);
+          border-radius:12px;padding:10px 12px;font-size:14px;outline:none
+        }
+        input:focus{border-color:rgba(59,130,246,.45);box-shadow:0 0 0 4px var(--ring)}
+
+        .panel-footer{
+          border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+        }
+        .pill{background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;cursor:pointer}
+        .send-btn{
+          background:linear-gradient(135deg,#a78bfa,#60a5fa); color:#06112d;
+          font-weight:800; border:none; border-radius:14px; padding:12px 16px; font-size:15px; cursor:pointer;
+          box-shadow:0 6px 16px rgba(96,165,250,.25);
+        }
+        .accept-btn{
+          background:linear-gradient(135deg,#34d399,#10b981); color:#052e2b;
+          font-weight:800; border:none; border-radius:14px; padding:12px 16px; font-size:16px; cursor:pointer;
+          box-shadow:0 6px 16px rgba(16,185,129,.25);
+        }
+
+        /* 토스트/디버그 */
+        .toast{position:fixed;right:16px;bottom:24px;background:#fff;color:#0f172a;border:1px solid var(--line);
+          padding:12px 14px;border-radius:12px;display:none;box-shadow:var(--shadow);z-index:80;transition:opacity .2s}
+        .toast.ok{border-color:rgba(16,185,129,.35)} .toast.err{border-color:rgba(239,68,68,.35)}
+        .dbg{position:sticky;top:0;z-index:1000;background:#fee2e2;color:#7f1d1d;border-bottom:1px solid #fca5a5;padding:8px 12px;display:none;font-size:13px;white-space:pre-wrap}
+    </style>
+</head>
+<body>
+<div id="dbg" class="dbg"></div>
+
+<header>
+    <div class="bar">
+        <span class="tag">판매 메뉴</span>
+        <span class="hint">“보기” → 화면 중앙 팝업에서 직거래/배송 날짜·시간/장소 수정 및 조건 수락</span>
+    </div>
+</header>
+
+<div class="container">
+    <h1>판매 중인 물품</h1>
+    <p class="subtitle">여러 물품을 판매 중이면 각 물품 ID 블록이 <strong>2 cm</strong> 간격으로 표시됩니다.</p>
+
+    <!-- 물품/조건 렌더 타깃 -->
+    <div id="itemsMount"></div>
+</div>
+
+<!-- ===== 팝업(모달) 에디터 ===== -->
+<div class="modal" id="editModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="panel">
+        <div class="panel-header">
+            <h3 class="panel-title" id="modalTitle">요청 수정</h3>
+            <button class="close-x" id="btnCloseModal" type="button">닫기</button>
+        </div>
+
+        <div class="panel-body">
+            <div class="edit-summary">
+                <div class="edit-left">
+                    <span class="edit-title" id="edTitle">물품 - 요청 수정</span>
+                    <span class="edit-sub" id="edSub"></span>
+                </div>
+            </div>
+
+            <div class="grid">
+                <!-- 직거래 전용 -->
+                <div class="field half" id="fldMeetDate">
+                    <label for="meetDate">만남 날짜</label>
+                    <input type="date" id="meetDate"/>
+                </div>
+                <div class="field half" id="fldMeetTime">
+                    <label for="meetTime">만남 시간</label>
+                    <input type="time" id="meetTime"/>
+                </div>
+                <!-- ⬇️ 요구사항: 날짜/시간 밑줄에 '만남 장소' 입력 추가 -->
+                <div class="field" id="fldMeetPlace">
+                    <label for="meetPlace">만남 장소</label>
+                    <input type="text" id="meetPlace" placeholder="예: 대구 반월당역 14번 출구 앞"/>
+                </div>
+
+                <!-- 배송 전용 -->
+                <div class="field third" id="fldShipDate">
+                    <label for="shipDate">배송(발송) 희망 날짜</label>
+                    <input type="date" id="shipDate"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-footer">
+            <div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <button class="pill" id="btnApply" type="button">변경 적용</button>
+                <span class="hint" id="applyHint">변경 후 요약이 즉시 업데이트됩니다.</span>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <!-- ⬇️ 요구사항: 조건 수락 왼쪽에 '구매 요청자에게 전달' 버튼 -->
+                <button class="send-btn" id="btnSendToBuyer" type="button">구매 요청자에게 전달</button>
+                <button class="accept-btn" id="btnAccept" type="button">조건 수락</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- [FIX] 서버 모델(agreement)을 JS로 주입: 없으면 null -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+      window.__AGREEMENT__ = /*[[${agreement}]]*/ null;
+    /*]]>*/
+</script>
+
+<script>
+    // ===== 공통 유틸 =====
+    const $ = (s)=>document.querySelector(s);
+    const el = (tag, cls, txt)=>{ const n=document.createElement(tag); if(cls) n.className=cls; if(txt) n.textContent=txt; return n; };
+    const toast=(msg, ok=false)=>{const t=$('#toast'); t.textContent=msg; t.className='toast '+(ok?'ok':'err'); t.style.display='block'; t.style.opacity='1'; setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=> t.style.display='none',200); }, 1800);};
+
+    // ===== 더미 데이터 (즉시 렌더용) =====
+    function dummyItems(){
+      return [
+        { id: 1001, title: '게이밍 키보드(청축)' },
+        { id: 1002, title: '중고 노트북 i5-8th' },
+        { id: 1003, title: '책상 램프 LED' },
+      ];
+    }
+    function dummyOffers(itemId){
+      const base = [
+        { id: 1, method: 'direct',  summary: '직거래 · 9/30 19:00 · 동대구역 1번출구 · 4.5만', payload: {
+          buyer:'홍길동', method:'direct', direct:{date:'2025-09-30', time:'19:00', place:'동대구역 1번 출구'},
+          price:{type:'range', min:45000, max:45000}, note:'상태 사진 한 번 더 부탁'
+        }},
+        { id: 2, method: 'shipping', summary: '배송 · 대구 달서구 · 3.8~4.2만', payload: {
+          buyer:'김철수', method:'shipping', shipping:{zip:'42600', addr1:'대구 달서구 월성로 00', addr2:'101-1203'},
+          price:{type:'range', min:38000, max:42000}, note:'주문서 동봉 부탁'
+        }},
+        { id: 3, method: 'direct',  summary: '직거래 · 10/1 12:30 · 반월당역 · 4.0만', payload: {
+          buyer:'이영희', method:'direct', direct:{date:'2025-10-01', time:'12:30', place:'반월당역 14번 출구'},
+          price:{type:'range', min:40000, max:40000}, note:null
+        }},
+      ];
+      if(itemId===1002){ base[0].summary='직거래 · 10/2 18:30 · 시지역 · 19만'; base[0].payload.price={type:'range',min:190000,max:190000}; }
+      if(itemId===1003){ base.pop(); }
+      return base;
+    }
+
+    // ===== [FIX] 서버 agreement → 화면용 item/offer로 변환 =====
+    function fromAgreementToViewModels(ag){
+      if(!ag) return null;
+      // method 매핑
+      const method = (ag.method || '').toString().toUpperCase() === 'SHIPPING' ? 'shipping' : 'direct';
+
+      // 가격 텍스트용(만 단위 유지 요청 흐름을 따라가되 실제 값 그대로 저장돼 있으면 단위만 계산)
+      const priceInt = Number.isFinite(ag.price) ? ag.price : null;
+      const priceView = priceInt != null ? {
+        type: 'range',
+        min: priceInt,
+        max: priceInt
+      } : null;
+
+      // 요약문 구성 파트
+      const fmtDateShort = (iso)=>{
+        if(!iso) return '';
+        const [y,m,d] = iso.split('-');
+        return (m?.replace(/^0/,'')||'') + '/' + (d?.replace(/^0/,'')||'');
+      };
+
+      let summary = '';
+      if(method === 'direct'){
+        const d = ag.directTime ? null : null; // 시간만 있을 가능성 대비(아래에서 time만 씀)
+        const place = ag.place || '';
+        const time = ag.directTime || '';
+        const ptxt = priceView ? `${(priceView.min??'-').toLocaleString()}${(priceView.max===priceView.min?'':'~'+(priceView.max??'-').toLocaleString())}` : '';
+        summary = `직거래 · ${time || ''} · ${place || ''} · ${ptxt?ptxt+'만':''}`.replace(/\s+·\s+·/g,' · ').trim();
+      }else{
+        const area = ag.address ? ag.address.split(' ').slice(0,2).join(' ') : '';
+        const ptxt = priceView ? `${(priceView.min??'-').toLocaleString()}${(priceView.max===priceView.min?'':'~'+(priceView.max??'-').toLocaleString())}` : '';
+        summary = `배송 · ${area} · ${ptxt?ptxt+'만':''}`.trim();
+      }
+
+      const item = {
+        id: ag.productId || ag.id || 0,
+        title: ag.note ? String(ag.note).slice(0,30) : '' // 별도 타이틀 필드 없으므로 note를 살짝 표시(디자인 변수 불변)
+      };
+
+      const offer = {
+        id: ag.id || 1,
+        method,
+        summary,
+        payload: {
+          buyer: ag.buyer || '',
+          method,
+          direct: method==='direct' ? {
+            date: ag.meetDate || '',     // 엔티티에 없다면 빈값
+            time: ag.directTime || '',
+            place: ag.place || ''
+          } : null,
+          shipping: method==='shipping' ? {
+            wishDate: ag.shipDate || '',
+            addr1: ag.address || '',
+            zip: ag.zip || '',
+            receiver: ag.receiver || '',
+            phone: ag.phone || ''
+          } : null,
+          price: priceView,
+          note: ag.note || null,
+          userId: ag.userId || null,
+          productId: ag.productId || null
+        }
+      };
+
+      return { items:[item], offersByItem: new Map([[item.id, [offer]]]) };
+    }
+
+    // ===== 렌더링 =====
+    function methodBadge(method){
+      const b = el('span', 'badge '+(method==='direct'?'direct':'shipping'));
+      b.textContent = method==='direct' ? '직거래' : '배송';
+      return b;
+    }
+
+    function offerRow(item, offer, index){
+      const row = el('div','offer-row');
+      const left = el('div','offer-left');
+      const num = el('div','num', String(index));
+      const badge = methodBadge(offer.method);
+      const sum = el('div','summary', offer.summary || '(요약 없음)');
+
+      left.appendChild(num);
+      left.appendChild(badge);
+      left.appendChild(sum);
+
+      const btn = el('button','view-btn','보기');
+      btn.setAttribute('aria-label', `요청 ${index} 수정`);
+      btn.addEventListener('click', ()=> openModalEditor(item, offer, sum));
+
+      row.appendChild(left);
+      row.appendChild(btn);
+      return row;
+    }
+
+    function itemBlock(item, offers){
+      const wrap = el('section','item-head');
+
+      const head = el('div','item-line');
+      head.appendChild(el('span','muted','물품 ID'));
+      head.appendChild(el('span','', String(item.id)));
+      head.appendChild(el('span','item-title', item.title ? `· ${item.title}` : ''));
+
+      const list = el('div','offer-list');
+      if(!offers || offers.length===0){
+        list.appendChild(el('div','hint','아직 들어온 조건이 없습니다.'));
+      }else{
+        offers.forEach((off, i)=>{
+          list.appendChild(offerRow(item, off, i+1));
+        });
+      }
+
+      wrap.appendChild(head);
+      wrap.appendChild(list);
+      return wrap;
+    }
+
+    // ===== 팝업 에디터 =====
+    let currentEdit = null; // { item, offer, summaryEl }
+
+    function openModalEditor(item, offer, summaryEl){
+      currentEdit = { item, offer, summaryEl };
+
+      $('#modalTitle').textContent = `물품 ${item.id}${item.title?` · ${item.title}`:''} - 요청 수정`;
+      $('#edTitle').textContent = `물품 ${item.id}${item.title?` · ${item.title}`:''}`;
+      $('#edSub').textContent = offer.summary || '';
+
+      const isDirect = (offer.method === 'direct');
+
+      // 전용 필드 토글
+      $('#fldMeetDate').style.display = isDirect ? '' : 'none';
+      $('#fldMeetTime').style.display = isDirect ? '' : 'none';
+      $('#fldMeetPlace').style.display = isDirect ? '' : 'none';
+      $('#fldShipDate').style.display = !isDirect ? '' : 'none';
+
+      // 값 세팅
+      if(isDirect){
+        $('#meetDate').value = offer?.payload?.direct?.date || '';
+        $('#meetTime').value = offer?.payload?.direct?.time || '';
+        $('#meetPlace').value = offer?.payload?.direct?.place || '';
+        $('#shipDate').value = '';
+      }else{
+        $('#shipDate').value = offer?.payload?.shipping?.wishDate || '';
+        $('#meetDate').value = '';
+        $('#meetTime').value = '';
+        $('#meetPlace').value = '';
+      }
+
+      $('#editModal').style.display = 'flex';
+    }
+
+    function closeModal(){
+      currentEdit = null;
+      $('#editModal').style.display = 'none';
+    }
+    $('#btnCloseModal').addEventListener('click', closeModal);
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+    function fmtDateShort(iso){
+      if(!iso) return '';
+      const [y,m,d] = iso.split('-');
+      return (m?.replace(/^0/,'')||'') + '/' + (d?.replace(/^0/,'')||'');
+    }
+
+    function rebuildSummary(offer){
+      try{
+        if(offer.method==='direct'){
+          const d = offer?.payload?.direct?.date || '';
+          const t = offer?.payload?.direct?.time || '';
+          const place = offer?.payload?.direct?.place || '';
+          const price = offer?.payload?.price;
+          const ptxt = price ? (price.type==='range'
+            ? `${(price.min??'-').toLocaleString()}~${(price.max??'-').toLocaleString()}`
+            : `${(price.value??'-').toLocaleString()}`) : '';
+          offer.summary = `직거래 · ${fmtDateShort(d)} ${t || ''} · ${place || ''} · ${ptxt?ptxt+'만':''}`.replace(/\s+·\s+·/g,' · ').trim();
+        }else{
+          const zip = offer?.payload?.shipping?.zip || '';
+          const a1  = offer?.payload?.shipping?.addr1 || '';
+          const wd  = offer?.payload?.shipping?.wishDate || '';
+          const price = offer?.payload?.price;
+          const ptxt = price ? (price.type==='range'
+            ? `${(price.min??'-').toLocaleString()}~${(price.max??'-').toLocaleString()}`
+            : `${(price.value??'-').toLocaleString()}`) : '';
+          const area = a1 || zip ? (a1? a1.split(' ').slice(0,2).join(' ') : `[${zip}]`) : '';
+          const dateSeg = wd ? ` · ${fmtDateShort(wd)}` : '';
+          offer.summary = `배송 · ${area}${dateSeg} · ${ptxt?ptxt+'만':''}`.trim();
+        }
+      }catch(_){}
+    }
+
+    // 변경 적용
+    $('#btnApply').addEventListener('click', ()=>{
+      if(!currentEdit){ toast('편집할 요청이 없습니다', false); return; }
+      const { offer, summaryEl } = currentEdit;
+
+      if(offer.method==='direct'){
+        const d = $('#meetDate').value;
+        const t = $('#meetTime').value;
+        const p = $('#meetPlace').value;
+        offer.payload = offer.payload || {};
+        offer.payload.direct = offer.payload.direct || {};
+        offer.payload.direct.date = d || null;
+        offer.payload.direct.time = t || null;
+        offer.payload.direct.place = p || null;
+      }else{
+        const sd = $('#shipDate').value;
+        offer.payload = offer.payload || {};
+        offer.payload.shipping = offer.payload.shipping || {};
+        offer.payload.shipping.wishDate = sd || null;
+      }
+
+      rebuildSummary(offer);
+      if(summaryEl) summaryEl.textContent = offer.summary || '(요약 없음)';
+      $('#edSub').textContent = offer.summary || '';
+      toast('변경 사항을 적용했습니다.', true);
+    });
+
+    // 구매 요청자에게 전달 (데모: 콘솔 출력)
+    $('#btnSendToBuyer').addEventListener('click', async ()=>{
+      if(!currentEdit){ toast('전달할 요청이 없습니다', false); return; }
+      const { item, offer } = currentEdit;
+
+      const sendPayload = {
+        to: offer?.payload?.buyer || '구매자',
+        itemId: item.id,
+        offerId: offer.id,
+        message: '판매자가 수정한 제안을 확인해 주세요.',
+        method: offer.method,
+        direct: offer.method==='direct' ? (offer.payload?.direct || null) : null,
+        shipping: offer.method==='shipping' ? (offer.payload?.shipping || null) : null,
+        price: offer.payload?.price || null,
+        note: offer.payload?.note || null
+      };
+
+      console.log('구매자에게 전달 payload', sendPayload);
+      toast('구매 요청자에게 전달했습니다. (콘솔에 payload 출력)', true);
+    });
+
+    // 조건 수락 (데모: 콘솔 출력)
+    $('#btnAccept').addEventListener('click', async ()=>{
+      if(!currentEdit){ toast('수락할 요청이 없습니다', false); return; }
+      const { item, offer } = currentEdit;
+
+      const acceptPayload = {
+        itemId: item.id,
+        offerId: offer.id,
+        method: offer.method,
+        direct: offer.method==='direct' ? (offer.payload?.direct || null) : null,
+        shipping: offer.method==='shipping' ? (offer.payload?.shipping || null) : null,
+        price: offer.payload?.price || null,
+        note: offer.payload?.note || null
+      };
+
+      console.log('조건 수락 전송 payload', acceptPayload);
+      toast('조건을 수락했습니다. (콘솔에 payload 출력)', true);
+      closeModal();
+    });
+
+    // ===== [FIX] 부팅: 서버 모델 우선 렌더 → 없으면 기존 더미 =====
+    function boot(){
+      const mount = $('#itemsMount');
+      mount.innerHTML = '';
+
+      const ag = window.__AGREEMENT__;
+      if (ag) {
+        const vm = fromAgreementToViewModels(ag);
+        if (vm && vm.items.length > 0) {
+          vm.items.forEach(it=>{
+            const offers = vm.offersByItem.get(it.id) || [];
+            mount.appendChild(itemBlock(it, offers));
+          });
+          return; // 서버 데이터로 렌더 완료
+        }
+      }
+
+      // 서버 데이터 없으면 기존 더미
+      const items = dummyItems();
+      items.forEach(it=>{
+        const offers = dummyOffers(it.id);
+        mount.appendChild(itemBlock(it, offers));
+      });
+    }
+    document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>

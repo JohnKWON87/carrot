@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중고거래 사이트 - 메인</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .navbar {
+            background-color: #fff;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .nav-categories {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-categories a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .nav-categories a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .search-box input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        .search-btn {
+            padding: 0.5rem 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .welcome-msg {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .welcome-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .section {
+            background: white;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background-color: #f8f9fa;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .category-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .category-card:hover {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .category-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .category-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .product-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            background-color: #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+
+        .product-info {
+            padding: 1rem;
+        }
+
+        .product-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-price {
+            color: #007bff;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #0056b3;
+        }
+
+        .action-btn.secondary {
+            background: #6c757d;
+        }
+
+        .action-btn.secondary:hover {
+            background: #545b62;
+        }
+
+        .action-btn.purchase {
+            background: #28a745;
+        }
+
+        .action-btn.purchase:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 바 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="navbar-left">
+            <a href="/" class="logo">중고거래</a>
+            <ul class="nav-categories">
+                <li><a href="/category/clothes">의류</a></li>
+                <li><a href="/category/electronics">가전제품</a></li>
+                <li><a href="/category/misc">기타 및 잡화</a></li>
+            </ul>
+        </div>
+
+        <div class="navbar-right">
+            <form action="/search/results" method="get" class="search-box">
+                <input type="text" name="keyword" placeholder="상품 검색..." required>
+                <button type="submit" class="search-btn">검색</button>
+            </form>
+
+            <div class="user-info">
+                <span class="welcome-msg" th:text="'안녕하세요, ' + ${user.username} + '님'">안녕하세요, 사용자님</span>
+                <a href="/my-info" style="padding: 0.5rem 1rem; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; margin-right: 0.5rem;">내정보</a>  <!-- 추가 -->
+                <a href="/logout" class="logout-btn">로그아웃</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- 메인 컨텐츠 -->
+<div class="container">
+    <!-- 환영 메시지 -->
+    <div class="welcome-section">
+        <h1>중고 거래 사이트에 오신 것을 환영합니다!</h1>
+        <p>안전하고 편리한 중고 거래를 시작해보세요.</p>
+    </div>
+
+    <!-- 카테고리 섹션 -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">카테고리 둘러보기</h2>
+        </div>
+        <div class="section-content">
+            <div class="category-grid">
+                <a href="/category/clothes" class="category-card">
+                    <div class="category-icon">👕</div>
+                    <div class="category-name">의류</div>
+                    <div class="category-desc">옷, 신발, 액세서리 등</div>
+                </a>
+
+                <a href="/category/electronics" class="category-card">
+                    <div class="category-icon">📱</div>
+                    <div class="category-name">가전제품</div>
+                    <div class="category-desc">스마트폰, 노트북, 가전제품 등</div>
+                </a>
+
+                <a href="/category/misc" class="category-card">
+                    <div class="category-icon">📦</div>
+                    <div class="category-name">기타 및 잡화</div>
+                    <div class="category-desc">도서, 생활용품, 기타 물품 등</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 바로 가기 -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">바로 가기</h2>
+        </div>
+        <div class="section-content">
+            <div class="quick-actions">
+                <a href="/item/register" class="action-btn">상품 등록하기</a>
+                <a href="/wanted/register" class="action-btn purchase">구매희망 등록</a>
+                <a href="/item/my" class="action-btn secondary">내 상품</a>
+                <a href="/wishlist" class="action-btn secondary">관심상품</a>
+                <a href="/my-info" class="action-btn secondary">내 정보수정</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 커뮤니티 게시판 (동적 메뉴) -->
+    <div class="section" th:if="${customMenus != null and !customMenus.isEmpty()}">
+        <div class="section-header">
+            <h2 class="section-title">커뮤니티</h2>
+        </div>
+        <div class="section-content">
+            <div class="category-grid">
+                <a th:each="menu : ${customMenus}"
+                   th:href="@{${menu.menuUrl}}"
+                   class="category-card">
+                    <div class="category-icon" th:text="${menu.menuIcon}">📋</div>
+                    <div class="category-name" th:text="${menu.menuName}">게시판</div>
+                    <div class="category-desc" th:text="${menu.description}">설명</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 최근 등록 상품 -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">최근 등록된 상품</h2>
+        </div>
+        <div class="section-content">
+            <div class="product-grid">
+                <!-- 상품이 있을 때 -->
+                <a th:if="${recentItems != null and !recentItems.isEmpty()}"
+                   th:each="item : ${recentItems}"
+                   th:href="@{/item/{id}(id=${item.id})}"
+                   class="product-card"
+                   style="text-decoration: none; color: inherit;">
+                        <div class="product-image">
+                            <img th:if="${item.imageUrl}"
+                                 th:src="@{${item.imageUrl}}"
+                                 alt="상품 이미지"
+                                 style="width: 100%; height: 100%; object-fit: cover;">
+                            <span th:unless="${item.imageUrl}">📦</span>
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name" th:text="${item.title}">상품명</div>
+                            <div class="product-price" th:text="${item.formattedPrice}">가격</div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- 상품이 없을 때 -->
+                <div th:if="${recentItems == null or recentItems.isEmpty()}"
+                     style="text-align: center; padding: 2rem; color: #666;">
+                    <p>등록된 상품이 없습니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

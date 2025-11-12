@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리 로그 - 관리자 페이지</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #e74c3c;
+            text-decoration: none;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .back-btn, .logout-btn {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+        }
+
+        .back-btn:hover, .logout-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .filters {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .filter-select, .search-input, .date-input {
+            padding: 0.75rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            min-width: 150px;
+        }
+
+        .search-btn, .reset-btn {
+            background: #3498db;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1.7rem;
+        }
+
+        .reset-btn {
+            background: #95a5a6;
+        }
+
+        .content-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .logs-table th,
+        .logs-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e8ed;
+            vertical-align: top;
+        }
+
+        .logs-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            position: sticky;
+            top: 0;
+        }
+
+        .log-id {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .item-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .item-link:hover {
+            text-decoration: underline;
+        }
+
+        .status-visible {
+            background: #27ae60;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+        }
+
+        .status-blinded {
+            background: #f39c12;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+        }
+
+        .status-deleted {
+            background: #e74c3c;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+        }
+
+        .reason-text {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-style: italic;
+            color: #555;
+        }
+
+        .reason-text:hover {
+            overflow: visible;
+            white-space: normal;
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .moderator-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .system-moderator {
+            color: #e74c3c;
+            font-style: italic;
+        }
+
+        .date-time {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card.blinded {
+            border-left: 4px solid #f39c12;
+        }
+
+        .stat-card.deleted {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .stat-card.restored {
+            border-left: 4px solid #27ae60;
+        }
+
+        .stat-card.total {
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-number.blinded { color: #f39c12; }
+        .stat-number.deleted { color: #e74c3c; }
+        .stat-number.restored { color: #27ae60; }
+        .stat-number.total { color: #3498db; }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e1e8ed;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .page-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 바 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/admin" class="logo">관리자 - 관리 로그</a>
+        <div class="navbar-right">
+            <span th:text="'안녕하세요, ' + ${user.name} + ' 관리자님'">안녕하세요, 관리자님</span>
+            <a href="/admin" class="back-btn">대시보드</a>
+            <a href="/logout" class="logout-btn">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<!-- 메인 컨텐츠 -->
+<div class="container">
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h1>📋 관리 로그</h1>
+        <p>관리자들의 모든 관리 활동 기록을 확인할 수 있습니다.</p>
+    </div>
+
+    <!-- 통계 정보 -->
+    <div class="stats-row">
+        <div class="stat-card total">
+            <div class="stat-number total" th:text="${totalLogs} ?: '0'">0</div>
+            <div class="stat-label">총 관리 기록</div>
+        </div>
+        <div class="stat-card blinded">
+            <div class="stat-number blinded" th:text="${blindedLogs} ?: '0'">0</div>
+            <div class="stat-label">블라인드 처리</div>
+        </div>
+        <div class="stat-card deleted">
+            <div class="stat-number deleted" th:text="${deletedLogs} ?: '0'">0</div>
+            <div class="stat-label">삭제 처리</div>
+        </div>
+        <div class="stat-card restored">
+            <div class="stat-number restored" th:text="${restoredLogs} ?: '0'">0</div>
+            <div class="stat-label">복원 처리</div>
+        </div>
+    </div>
+
+    <!-- 에러 메시지 표시 -->
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+    <!-- 필터링 -->
+    <div class="filters">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>관리 상태</label>
+                <select class="filter-select" id="statusFilter">
+                    <option value="">전체 상태</option>
+                    <option value="VISIBLE">복원</option>
+                    <option value="BLINDED">블라인드</option>
+                    <option value="DELETED">삭제</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>관리자</label>
+                <select class="filter-select" id="moderatorFilter">
+                    <option value="">전체 관리자</option>
+                    <option value="system@carrot.com">시스템 자동</option>
+                    <option value="admin@carrot.com">관리자</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>시작 날짜</label>
+                <input type="date" class="date-input" id="startDate">
+            </div>
+
+            <div class="filter-group">
+                <label>종료 날짜</label>
+                <input type="date" class="date-input" id="endDate">
+            </div>
+
+            <button class="search-btn" onclick="applyFilters()">필터 적용</button>
+            <button class="reset-btn" onclick="resetFilters()">초기화</button>
+        </div>
+    </div>
+
+    <!-- 컨텐츠 섹션 -->
+    <div class="content-section">
+        <!-- 관리 로그 테이블 -->
+        <div th:if="${logs != null and !logs.isEmpty()}">
+            <table class="logs-table">
+                <thead>
+                <tr>
+                    <th>로그 ID</th>
+                    <th>상품 ID</th>
+                    <th>관리 상태</th>
+                    <th>관리 사유</th>
+                    <th>관리자</th>
+                    <th>처리일시</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="log : ${logs}">
+                    <td class="log-id" th:text="'#' + ${log.id}">1</td>
+                    <td>
+                        <a href="#" class="item-link" th:href="'/item/' + ${log.itemId}"
+                           th:text="${log.itemId}" target="_blank">
+                            123
+                        </a>
+                    </td>
+                    <td>
+                                <span th:class="'status-' + ${#strings.toLowerCase(log.moderationStatus)}"
+                                      th:text="${log.moderationStatus == 'VISIBLE'} ? '정상' :
+                                                (${log.moderationStatus == 'BLINDED'} ? '블라인드' : '삭제됨')">
+                                    블라인드
+                                </span>
+                    </td>
+                    <td>
+                        <div class="reason-text" th:text="${log.moderationReason}"
+                             th:title="${log.moderationReason}">
+                            관리 사유가 여기에 표시됩니다
+                        </div>
+                    </td>
+                    <td>
+                                <span th:class="${#strings.contains(log.moderatorEmail, 'system')} ? 'system-moderator' : 'moderator-name'"
+                                      th:text="${#strings.contains(log.moderatorEmail, 'system')} ? '시스템 자동' : ${log.moderatorEmail}">
+                                    admin@carrot.com
+                                </span>
+                    </td>
+                    <td class="date-time">
+                        <div th:text="${#temporals.format(log.moderatedAt, 'yyyy-MM-dd')}">2024-01-01</div>
+                        <div th:text="${#temporals.format(log.moderatedAt, 'HH:mm:ss')}">12:00:00</div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- 페이지네이션 (나중에 구현) -->
+            <div class="pagination" style="display: none;">
+                <button class="page-btn">이전</button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn">다음</button>
+            </div>
+        </div>
+
+        <!-- 데이터가 없을 때 -->
+        <div th:if="${logs == null or logs.isEmpty()}" class="no-data">
+            <p>관리 로그가 없습니다.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function applyFilters() {
+        const status = document.getElementById('statusFilter').value;
+        const moderator = document.getElementById('moderatorFilter').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        let url = '/admin/logs?';
+        const params = new URLSearchParams();
+
+        if (status) params.append('status', status);
+        if (moderator) params.append('moderator', moderator);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+
+        window.location.href = url + params.toString();
+    }
+
+    function resetFilters() {
+        window.location.href = '/admin/logs';
+    }
+
+    // 오늘 날짜를 기본값으로 설정
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        // 기본적으로 최근 7일간의 로그를 보여주도록 설정
+        if (!document.getElementById('startDate').value) {
+            document.getElementById('startDate').value = weekAgo;
+        }
+        if (!document.getElementById('endDate').value) {
+            document.getElementById('endDate').value = today;
+        }
+    });
+</script>
+</body>
+</html>

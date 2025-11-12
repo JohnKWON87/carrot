@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검색 - 중고마켓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff6b35;
+            text-decoration: none;
+        }
+
+        .logo::before {
+            content: "♻️";
+            margin-right: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 107, 53, 0.1);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .search-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .search-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .search-input-group {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            padding-right: 3rem;
+            border: 2px solid #eee;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .filter-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .filter-select {
+            padding: 0.8rem;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+
+        .search-btn {
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        .quick-searches {
+            margin-top: 2rem;
+        }
+
+        .quick-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .quick-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .quick-tag {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 107, 53, 0.1);
+            color: #ff6b35;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .quick-tag:hover {
+            background: #ff6b35;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #e74c3c;
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        @media (max-width: 768px) {
+            .filter-section {
+                grid-template-columns: 1fr;
+            }
+
+            .search-card {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo">중고마켓</a>
+        <div class="nav-links">
+            <span>안녕하세요, <strong th:text="${username}">사용자</strong>님!</span>
+            <a href="/">홈</a>
+            <a href="/wishlist">관심상품</a>
+            <a href="/logout">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<!-- 검색 영역 -->
+<div class="container">
+    <div class="search-card">
+        <h1 class="search-title">검색어를 입력해 주세요</h1>
+
+        <!-- 에러 메시지 -->
+        <div th:if="${error}" class="alert" th:text="${error}"></div>
+
+        <form action="/search/results" method="get" class="search-form">
+            <!-- 검색어 입력 -->
+            <div class="search-input-group">
+                <input type="text" name="keyword" class="search-input"
+                       placeholder="원하시는 상품을 검색하세요" required>
+                <span class="search-icon">🔍</span>
+            </div>
+
+            <!-- 필터 옵션 -->
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label class="filter-label">카테고리</label>
+                    <select name="category" class="filter-select">
+                        <option value="all">전체</option>
+                        <option value="electronics">가전제품</option>
+                        <option value="clothes">의류</option>
+                        <option value="misc">기타 및 잡화</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">정렬</label>
+                    <select name="sort" class="filter-select">
+                        <option value="latest">최신순</option>
+                        <option value="price_low">가격 낮은순</option>
+                        <option value="price_high">가격 높은순</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="search-btn">검색하기</button>
+        </form>
+
+        <!-- 인기 검색어 -->
+        <div class="quick-searches">
+            <div class="quick-title">인기 검색어</div>
+            <div class="quick-tags">
+                <a href="/search/results?keyword=아이폰" class="quick-tag">아이폰</a>
+                <a href="/search/results?keyword=맥북" class="quick-tag">맥북</a>
+                <a href="/search/results?keyword=나이키" class="quick-tag">나이키</a>
+                <a href="/search/results?keyword=책상" class="quick-tag">책상</a>
+                <a href="/search/results?keyword=카메라" class="quick-tag">카메라</a>
+                <a href="/search/results?keyword=의자" class="quick-tag">의자</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

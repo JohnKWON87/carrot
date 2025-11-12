@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- 프로젝트의 POM 버전 정의 -->
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <!-- 부모 프로젝트 (Spring Boot BOM 역할) -->
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.5</version>
+        <relativePath/> <!-- 로컬이 아닌 Maven 중앙 저장소에서 부모 가져옴 -->
+    </parent>
+    <!-- 프로젝트의 기본 정보 -->
+    <groupId>com.carrot</groupId> <!-- 보통 회사/조직 도메인 반대로 -->
+    <artifactId>carrot</artifactId> <!-- 프로젝트 이름 -->
+    <version>0.0.1-SNAPSHOT</version><!-- 버전 (개발 중이면 SNAPSHOT) -->
+    <name>carrot</name>
+    <description>shop Project for Spring Boot</description>
+
+    <!-- 프로젝트 URL, 라이선스, 개발자, 소스 관리 툴 정보 (선택) -->
+    <url/>
+    <licenses>
+        <license/>
+    </licenses>
+    <developers>
+        <developer/>
+    </developers>
+    <scm>
+        <connection/>
+        <developerConnection/>
+        <tag/>
+        <url/>
+    </scm>
+    <!-- 공통 속성 (여기 값은 ${변수명} 으로 재사용 가능) -->
+    <properties>
+        <java.version>21</java.version>         <!-- JDK 버전 -->
+        <querydsl.version>5.0.0</querydsl.version><!-- QueryDSL 버전 -->
+        <lombok.version>1.18.38</lombok.version>
+
+    </properties>
+
+    <!-- ================== 프로젝트 의존성 (라이브러리) ================== -->
+    <dependencies>
+        <!-- Spring Data JPA (Hibernate 포함) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <!-- Thymeleaf (뷰 템플릿 엔진) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <!-- Spring MVC (웹 애플리케이션, REST API 개발용) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- 내장 H2 DB (테스트/로컬 개발용 DB) -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- MySQL 드라이버 -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Lombok (Getter/Setter/생성자 자동 생성) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- 테스트 관련 (JUnit, Spring Test 지원) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Page 99 변경사항 apt구간만 변경 JDK 21로 변경-->
+        <!-- QueryDSL (JPA 전용) -->
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+            <version>${querydsl.version}</version>
+            <classifier>jakarta</classifier>
+        </dependency>
+        <!-- QueryDSL Annotation Processor (엔티티 기반 Q클래스 생성기) -->
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-apt</artifactId>
+            <version>${querydsl.version}</version>
+            <scope>provided</scope>
+            <classifier>jpa</classifier>
+        </dependency>
+
+        <dependency> <!-- Page 114 -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <version>3.5.5</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency> <!-- Page 132 -->
+            <groupId>nz.net.ultraq.thymeleaf</groupId>
+            <artifactId>thymeleaf-layout-dialect</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security Page147 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <version>3.5.6</version>
+        </dependency>
+
+        <dependency> <!-- Page 165 -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency><!-- Page 175 -->
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+            <version>${spring-security.version}</version>
+            <!-- 만일 버전 생략하면 Spring Boot가 자동으로 호환 -->
+        </dependency>
+        <dependency> <!-- Page 178 명시적으로 버전 입력값 -->
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity5</artifactId>
+            <version>3.1.1.RELEASE</version>
+        </dependency>
+        <dependency><!-- Page 232 -->
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
+        <!-- Page 99 변경사항 하단부 APT와 JPA 추가할때 같이 추가-->
+        <!-- (선택) JPA API 직접 명시할 때 사용 -->
+        <!--        <dependency>-->
+        <!--            <groupId>jakarta.persistence</groupId>-->
+        <!--            <artifactId>jakarta.persistence-api</artifactId>-->
+        <!--            <version>3.1.0</version>-->
+
+        <!--        </dependency>-->
+    </dependencies>
+    <!-- ================== 빌드 관련 설정 ================== -->
+    <build>
+        <plugins>
+            <!-- 자바 컴파일 플러그인 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <!-- 최신 버전 추가 -->
+                <version>3.11.0</version>
+                <configuration>
+                    <release>${java.version}</release>
+                    <!-- Annotation Processor 등록 -->
+                    <annotationProcessorPaths>
+                        <!-- Lombok -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <!-- QueryDSL Annotation Processor -->
+                        <path>
+                            <groupId>com.querydsl</groupId>
+                            <artifactId>querydsl-apt</artifactId>
+                            <version>${querydsl.version}</version>
+                            <classifier>jakarta</classifier>
+                        </path>
+                        <!-- JPA API (QueryDSL이 Q클래스 생성 시 필요) -->
+                        <path>
+                            <groupId>jakarta.persistence</groupId>
+                            <artifactId>jakarta.persistence-api</artifactId>
+                            <version>3.1.0</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <!-- Spring Boot 전용 빌드 플러그인 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Lombok은 빌드 결과물에 포함하지 않도록 제외 -->
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

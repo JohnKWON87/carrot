@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품 등록 - 중고마켓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff6b35;
+            text-decoration: none;
+        }
+
+        .logo::before {
+            content: "♻️";
+            margin-right: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 107, 53, 0.1);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .form-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #ff6b35;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-help {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .price-input-wrapper {
+            position: relative;
+        }
+
+        .price-input-wrapper::after {
+            content: "원";
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        .price-input {
+            padding-right: 3rem !important;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            border: none;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .alert-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .image-upload-section {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            background: rgba(248, 249, 250, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-upload-section:hover {
+            border-color: #ff6b35;
+            background: rgba(255, 107, 53, 0.05);
+        }
+
+        .image-placeholder {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+
+        .image-text {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .image-help {
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-card {
+                margin: 1rem;
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo">중고마켓</a>
+        <div class="nav-links">
+            <span>안녕하세요, <strong th:text="${username}">사용자</strong>님!</span>
+            <a href="/">홈</a>
+            <a href="/search">검색</a>
+            <a href="/logout">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<!-- 상품 등록 폼 -->
+<div class="container">
+    <div class="form-card">
+        <h1 class="form-title">상품 등록하기</h1>
+
+        <!-- 에러/성공 메시지 -->
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <form action="/item/register" method="post" id="itemForm">
+            <!-- 상품 제목 -->
+            <div class="form-group">
+                <label for="title">상품 제목 <span class="required">*</span></label>
+                <input type="text" id="title" name="title"
+                       placeholder="상품 제목을 입력해주세요"
+                       maxlength="100" required>
+                <div class="form-help">5글자 이상 100글자 이하로 입력해주세요.</div>
+            </div>
+
+            <!-- 상품 설명 -->
+            <div class="form-group">
+                <label for="description">상품 설명 <span class="required">*</span></label>
+                <textarea id="description" name="description"
+                          placeholder="상품에 대해 자세히 설명해주세요&#10;- 구매 시기, 사용감, 하자 유무 등&#10;- 직거래 희망 장소&#10;- 기타 특이사항"
+                          maxlength="2000" required></textarea>
+                <div class="form-help">10글자 이상 2000글자 이하로 입력해주세요.</div>
+            </div>
+
+            <!-- 가격과 카테고리 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="price">판매 가격 <span class="required">*</span></label>
+                    <div class="price-input-wrapper">
+                        <input type="number" id="price" name="price" class="price-input"
+                               placeholder="0" min="0" max="999999999" required>
+                    </div>
+                    <div class="form-help">0원 이상 입력해주세요. (무료나눔도 가능)</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">카테고리 <span class="required">*</span></label>
+                    <select id="category" name="category" required>
+                        <option value="">카테고리를 선택하세요</option>
+                        <option value="electronics">가전제품</option>
+                        <option value="clothes">의류</option>
+                        <option value="misc">기타 및 잡화</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 거래 지역 -->
+            <div class="form-group">
+                <label for="location">거래 희망 지역 <span class="required">*</span></label>
+                <input type="text" id="location" name="location"
+                       placeholder="예: 서울 강남구, 경기 성남시 등"
+                       maxlength="100" required>
+                <div class="form-help">직거래를 희망하시는 지역을 입력해주세요.</div>
+            </div>
+
+            <!-- 이미지 업로드 (6단계에서 구현 예정) -->
+            <div class="form-group">
+                <label>상품 사진</label>
+                <div class="image-upload-section" id="imageUploadSection">
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    <input type="hidden" id="imageUrl" name="imageUrl">
+                    <div id="imagePreview" class="image-preview" style="display: none;">
+                        <img id="previewImg" style="max-width: 100%; max-height: 300px; border-radius: 8px;">
+                        <button type="button" id="removeImageBtn" class="remove-image-btn">삭제</button>
+                    </div>
+                    <div id="uploadPlaceholder">
+                        <div class="image-placeholder">📷</div>
+                        <div class="image-text">사진 추가하기 (선택사항)</div>
+                        <div class="image-help">클릭해서 이미지를 업로드하세요</div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">상품 등록하기</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 폼 유효성 검사
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('itemForm');
+        const title = document.getElementById('title');
+        const description = document.getElementById('description');
+        const price = document.getElementById('price');
+        const category = document.getElementById('category');
+        const location = document.getElementById('location');
+
+        // 가격 입력 시 숫자만 허용하고 콤마 표시
+        price.addEventListener('input', function() {
+            let value = this.value.replace(/[^0-9]/g, '');
+            if (value) {
+                // 콤마 추가 (표시용)
+                this.setAttribute('data-value', value);
+                this.style.setProperty('--display-value', `"${parseInt(value).toLocaleString()}"`);
+            }
+        });
+
+        // 폼 제출 시 유효성 검사
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            let errorMessage = '';
+
+            // 제목 검사
+            if (title.value.trim().length < 5) {
+                isValid = false;
+                errorMessage = '상품 제목은 5글자 이상 입력해주세요.';
+            }
+
+            // 설명 검사
+            if (description.value.trim().length < 10) {
+                isValid = false;
+                errorMessage = '상품 설명은 10글자 이상 입력해주세요.';
+            }
+
+            // 가격 검사
+            if (price.value === '' || parseInt(price.value) < 0) {
+                isValid = false;
+                errorMessage = '올바른 가격을 입력해주세요.';
+            }
+
+            // 카테고리 검사
+            if (category.value === '') {
+                isValid = false;
+                errorMessage = '카테고리를 선택해주세요.';
+            }
+
+            // 지역 검사
+            if (location.value.trim() === '') {
+                isValid = false;
+                errorMessage = '거래 희망 지역을 입력해주세요.';
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                alert(errorMessage);
+            }
+        });
+
+        // 문자 수 실시간 체크 (선택사항)
+        title.addEventListener('input', function() {
+            if (this.value.length > 100) {
+                this.value = this.value.substring(0, 100);
+            }
+        });
+
+        description.addEventListener('input', function() {
+            if (this.value.length > 2000) {
+                this.value = this.value.substring(0, 2000);
+            }
+        });
+    });
+    // 기존 스크립트에 추가
+document.getElementById('imageUploadSection').addEventListener('click', function() {
+    document.getElementById('imageInput').click();
+});
+
+document.getElementById('imageInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        uploadImage(file);
+    }
+});
+
+document.getElementById('removeImageBtn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    removeImage();
+});
+
+function uploadImage(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/file/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('imageUrl').value = data.url;
+            document.getElementById('previewImg').src = data.url;
+            document.getElementById('imagePreview').style.display = 'block';
+            document.getElementById('uploadPlaceholder').style.display = 'none';
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Upload error:', error);
+        alert('이미지 업로드 중 오류가 발생했습니다.');
+    });
+}
+
+function removeImage() {
+    const imageUrl = document.getElementById('imageUrl').value;
+    const filename = imageUrl.split('/').pop();
+
+    fetch('/api/file/delete?filename=' + filename, {
+        method: 'DELETE'
+    })
+    .then(() => {
+        document.getElementById('imageUrl').value = '';
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('uploadPlaceholder').style.display = 'block';
+    });
+}
+</script>
+</body>
+</html>

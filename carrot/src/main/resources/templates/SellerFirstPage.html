@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>판매자 contact – 거래/배송 합의 폼</title>
+
+    <!-- (선택) CSRF를 쓰는 경우 메타로 전달 -->
+    <meta name="_csrf" th:content="${_csrf?.token}">
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}">
+
+    <style>
+        :root {
+          --bg:#fff; --surface:#fff; --line:rgba(2,6,23,.08);
+          --shadow:0 6px 24px rgba(2,6,23,.06), 0 2px 6px rgba(2,6,23,.05);
+          --muted:#64748b; --text:#0f172a; --accent:#22d3ee; --accent-2:#3b82f6;
+          --ring:rgba(59,130,246,.24);
+        }
+        * { box-sizing:border-box; }
+        body {
+          margin:0; padding:24px; background:var(--bg); color:var(--text);
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        }
+        .container {
+          max-width: 980px; margin: 0 auto; background: var(--surface);
+          border:1px solid var(--line); border-radius:16px; box-shadow: var(--shadow);
+          padding: 24px;
+        }
+        h1 { font-size: 22px; margin: 0 0 16px 0; }
+        .muted { color: var(--muted); font-size: 13px; }
+        .row { display: grid; grid-template-columns: 1fr 2fr; gap: 14px 16px; align-items: center; margin-bottom: 12px; }
+        label { font-weight:600; }
+        input[type="text"], input[type="number"], input[type="tel"], input[type="datetime-local"], input[type="date"], select, textarea {
+          width: 100%; padding: 10px 12px; border:1px solid var(--line); border-radius: 10px; outline: none;
+        }
+        input:focus, select:focus, textarea:focus {
+          box-shadow: 0 0 0 4px var(--ring);
+          border-color: var(--accent-2);
+        }
+        .section { margin-top: 20px; padding-top: 16px; border-top:1px dashed var(--line); }
+        .radio-row { display:flex; gap:16px; align-items:center; }
+        .submitbar {
+          display:flex; justify-content:flex-end; gap:12px; margin-top: 18px; padding-top: 16px; border-top:1px solid var(--line);
+        }
+        .btn {
+          appearance: none; border:1px solid var(--line); background:#f8fafc;
+          border-radius: 10px; padding: 10px 16px; cursor: pointer; font-weight:600;
+        }
+        .btn.primary {
+          background: linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; border:none;
+        }
+        .help { font-size:12px; color: var(--muted); margin-top: 4px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>판매자 contact – 거래/배송 합의 폼</h1>
+    <p class="muted">필수 항목을 채운 뒤 “판매자에게 보내기”를 누르면 구매자 화면으로 이동합니다.</p>
+
+    <form id="agreementForm"
+          th:action="@{/seller/submit}"
+          th:object="${agreement}"
+          method="post">
+
+        <input type="hidden" th:if="${_csrf != null}"
+               th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <input type="hidden" th:field="*{userId}"/>
+        <input type="hidden" th:field="*{productId}"/>
+
+        <!-- 가격 -->
+        <div class="row">
+            <label for="price">가격(원)</label>
+            <input id="price" type="number" min="0" step="1"
+                   placeholder="예: 35000"
+                   th:field="*{price}" required />
+        </div>
+
+        <!-- 구매자명 -->
+        <div class="row">
+            <label for="buyerName">구매자명</label>
+            <div>
+                <input id="buyerName" type="text"
+                       th:field="*{buyer}"
+                       placeholder="홍길동"
+                       aria-label="구매자명"
+                       required maxlength="100" autocomplete="name" />
+                <div class="help">구매자 표시용 이름 (배송지 성함과 동일하거나 닉네임)</div>
+            </div>
+        </div>
+
+        <!-- 거래 방식 -->
+        <div class="row">
+            <label>거래 방식</label>
+            <div class="radio-row">
+                <label>
+                    <input type="radio" th:field="*{method}" value="DIRECT" checked />
+                    직거래
+                </label>
+                <label>
+                    <input type="radio" th:field="*{method}" value="DELIVERY" />
+                    배송
+                </label>
+            </div>
+        </div>
+
+        <!-- 직거래 정보 -->
+        <div class="section" id="directSection">
+            <div class="row">
+                <label for="place">직거래 장소</label>
+                <input id="place" type="text" th:field="*{place}"
+                       placeholder="예: ○○역 3번 출구 앞 / ○○카페" maxlength="255"/>
+            </div>
+
+            <div class="row">
+                <label for="directDateTime">직거래 일시</label>
+                <input id="directDateTime" type="datetime-local"
+                       th:field="*{directTime}" />
+            </div>
+
+            <input type="hidden" id="directDateHidden" th:field="*{directDate}" />
+        </div>
+
+        <!-- 배송 정보 -->
+        <div class="section" id="deliverySection">
+            <div class="row">
+                <label for="address">배송지 주소</label>
+                <input id="address" type="text" th:field="*{address}"
+                       placeholder="도로명 주소" maxlength="100" autocomplete="street-address"/>
+            </div>
+
+            <div class="row">
+                <label for="receiver">수령인</label>
+                <input id="receiver" type="text" th:field="*{receiver}"
+                       placeholder="예: 홍길동" maxlength="50" autocomplete="name"/>
+            </div>
+
+            <div class="row">
+                <label for="phone">연락처</label>
+                <input id="phone" type="tel" th:field="*{phone}"
+                       placeholder="예: 010-1234-5678" maxlength="50" autocomplete="tel"/>
+            </div>
+
+            <div class="row" id="deliveryDateRow">
+                <label for="deliveryDate">배송 예정일</label>
+                <input id="deliveryDate" type="date" name="deliveryDateUi" />
+            </div>
+        </div>
+
+        <!-- 비고 -->
+        <div class="row">
+            <label for="note">요청/비고</label>
+            <textarea id="note" rows="4" th:field="*{note}"
+                      placeholder="특이사항, 요청사항 등을 적어 주세요 (선택)"></textarea>
+        </div>
+
+        <div class="submitbar">
+            <button type="submit" id="btnSubmit" class="btn primary">판매자에게 보내기</button>
+        </div>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    (function(){
+      const methodInputs = document.querySelectorAll('input[name="method"]');
+      const directSection = document.getElementById('directSection');
+      const deliverySection = document.getElementById('deliverySection');
+
+      function applyMode() {
+        const val = Array.from(methodInputs).find(i => i.checked)?.value || 'DIRECT';
+        if (val === 'DIRECT') {
+          directSection.style.display = '';
+          deliverySection.style.display = 'none';
+        } else {
+          directSection.style.display = 'none';
+          deliverySection.style.display = '';
+        }
+      }
+      methodInputs.forEach(i => i.addEventListener('change', applyMode));
+      applyMode();
+
+      // ⭐ 제출 이벤트 가로채서 루트로 이동
+      const form = document.getElementById('agreementForm');
+      form.addEventListener('submit', function(e){
+        e.preventDefault(); // 기본 폼 제출 막기
+        window.location.href = "http://127.0.0.1:8080";
+      });
+    })();
+</script>
+</body>
+</html>

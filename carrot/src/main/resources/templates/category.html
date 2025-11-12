@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${categoryName} + ' - 중고마켓'">카테고리 - 중고마켓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff6b35;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 107, 53, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .page-title {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .item-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #666;
+        }
+
+        .item-content {
+            padding: 1.5rem;
+        }
+
+        .item-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .item-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo">♻️ 중고마켓</a>
+        <div class="nav-links">
+            <span>안녕하세요, <strong th:text="${username}">사용자</strong>님!</span>
+            <a href="/">홈</a>
+            <a href="/item/list">상품 목록</a>
+            <a href="/search">검색</a>
+            <a href="/logout">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title" th:text="${categoryName}">카테고리</h1>
+        <p th:text="'총 ' + ${items.size()} + '개의 상품'">상품 개수</p>
+    </div>
+
+    <div th:if="${items != null and !items.isEmpty()}">
+        <div class="items-grid">
+            <a th:each="item : ${items}"
+               th:href="@{/item/{id}(id=${item.id})}"
+               class="item-card">
+                <div class="item-image">
+                    <img th:if="${item.imageUrl}"
+                         th:src="@{${item.imageUrl}}"
+                         alt="상품 이미지"
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                    <span th:unless="${item.imageUrl}">📦</span>
+                </div>
+                <div class="item-content">
+                    <h3 class="item-title" th:text="${item.title}">상품 제목</h3>
+                    <div class="item-price" th:text="${item.formattedPrice}">가격</div>
+                    <div class="item-meta">
+                        <div>📍 <span th:text="${item.location}">위치</span></div>
+                        <div th:text="${item.timeAgo}">시간</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${items == null or items.isEmpty()}" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h2>등록된 상품이 없습니다</h2>
+        <p>이 카테고리에 첫 번째 상품을 등록해보세요!</p>
+        <a href="/item/register" style="display: inline-block; padding: 1rem 2rem; background: #ff6b35; color: white; text-decoration: none; border-radius: 25px; margin-top: 1rem;">상품 등록하기</a>
+    </div>
+</div>
+</body>
+</html>

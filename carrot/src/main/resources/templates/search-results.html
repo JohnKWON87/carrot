@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'검색 결과: ' + ${keyword} + ' - 중고마켓'">검색 결과 - 중고마켓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff6b35;
+            text-decoration: none;
+        }
+
+        .logo::before {
+            content: "♻️";
+            margin-right: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 107, 53, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .search-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .search-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .search-title {
+            font-size: 1.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .result-count {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filter-item {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 107, 53, 0.1);
+            color: #ff6b35;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .result-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #666;
+        }
+
+        .result-content {
+            padding: 1.5rem;
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .result-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .result-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .result-location {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .no-results-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .no-results-text {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .back-to-search {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .search-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .search-filters {
+                flex-wrap: wrap;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo">중고마켓</a>
+        <div class="nav-links">
+            <span>안녕하세요, <strong th:text="${username}">사용자</strong>님!</span>
+            <a href="/search">검색</a>
+            <a href="/">홈</a>
+            <a href="/logout">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 검색 정보 -->
+    <div class="search-header">
+        <div class="search-info">
+            <h1 class="search-title" th:text="'&quot;' + ${keyword} + '&quot; 검색 결과'">검색 결과</h1>
+            <div class="result-count" th:text="${totalResults} + '개의 상품을 찾았습니다'">0개의 상품을 찾았습니다</div>
+        </div>
+
+        <div class="search-filters">
+            <div class="filter-item" th:text="${category == 'all' ? '전체 카테고리' :
+                    (category == 'electronics' ? '가전제품' :
+                     category == 'clothes' ? '의류' : '기타 및 잡화')}">전체 카테고리</div>
+            <div class="filter-item" th:text="${sort == 'latest' ? '최신순' :
+                    (sort == 'price_low' ? '가격 낮은순' : '가격 높은순')}">최신순</div>
+        </div>
+    </div>
+
+    <!-- 검색 결과 -->
+    <div th:if="${results != null and !results.isEmpty()}">
+        <div class="results-grid">
+            <div class="result-card" th:each="item : ${results}"
+                 th:onclick="'location.href=\'/item/\' + ${item.id}'">
+                <div class="result-image">
+                    📦
+                </div>
+                <div class="result-content">
+                    <h3 class="result-title" th:text="${item.title}">상품 제목</h3>
+                    <p class="result-description" th:text="${item.description}">상품 설명</p>
+                    <div class="result-price" th:text="${item.formattedPrice}">가격</div>
+                    <div class="result-meta">
+                        <div class="result-location">
+                            📍 <span th:text="${item.location}">위치</span>
+                        </div>
+                        <div th:text="${item.timeAgo}">시간</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 검색 결과 없음 -->
+    <div th:if="${results == null or results.isEmpty()}" class="no-results">
+        <div class="no-results-icon">🔍</div>
+        <h2 class="no-results-title">검색 결과가 없습니다</h2>
+        <p class="no-results-text">다른 검색어로 다시 시도해보세요</p>
+        <a href="/search" class="back-to-search">다시 검색하기</a>
+    </div>
+</div>
+</body>
+</html>

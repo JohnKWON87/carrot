@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시스템 설정 - 관리자 페이지</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #e74c3c;
+            text-decoration: none;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .back-btn, .logout-btn, .refresh-btn {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+        }
+
+        .refresh-btn {
+            background: #27ae60;
+        }
+
+        .back-btn:hover, .logout-btn:hover, .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .last-updated {
+            position: absolute;
+            top: 1rem;
+            right: 2rem;
+            font-size: 0.875rem;
+            color: #7f8c8d;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.user { border-left: 5px solid #3498db; }
+        .stat-card.item { border-left: 5px solid #e74c3c; }
+        .stat-card.activity { border-left: 5px solid #f39c12; }
+        .stat-card.database { border-left: 5px solid #27ae60; }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-detail {
+            font-size: 0.85rem;
+            color: #95a5a6;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e1e8ed;
+        }
+
+        .category-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .category-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .category-name {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-count {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .recent-activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e1e8ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-info {
+            flex: 1;
+        }
+
+        .activity-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-detail {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: #95a5a6;
+        }
+
+        .db-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .db-info-item {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .db-info-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+        }
+
+        .db-info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-spinner {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .add-menu-btn {
+    background: #3498db;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.add-menu-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.menu-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.menu-table th,
+.menu-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.menu-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.status-active {
+    background: #27ae60;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+}
+
+.status-inactive {
+    background: #95a5a6;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+}
+
+.action-btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-right: 0.3rem;
+    transition: all 0.3s ease;
+}
+
+.btn-edit {
+    background: #3498db;
+    color: white;
+}
+
+.btn-toggle {
+    background: #f39c12;
+    color: white;
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-edit:hover { background: #2980b9; }
+.btn-toggle:hover { background: #e67e22; }
+.btn-delete:hover { background: #c0392b; }
+
+/* 모달 스타일 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.btn-cancel, .btn-save {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-cancel {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-save {
+    background: #3498db;
+    color: white;
+}
+
+.btn-cancel:hover { background: #7f8c8d; }
+.btn-save:hover { background: #2980b9; }
+    </style>
+</head>
+<body>
+<!-- 로딩 오버레이 -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>데이터를 불러오는 중...</p>
+    </div>
+</div>
+
+<!-- 네비게이션 바 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/admin" class="logo">관리자 - 시스템 설정</a>
+        <div class="navbar-right">
+            <span th:text="'안녕하세요, ' + ${user.name} + ' 관리자님'">안녕하세요, 관리자님</span>
+            <button class="refresh-btn" onclick="refreshStats()">🔄 새로고침</button>
+            <a href="/admin" class="back-btn">대시보드</a>
+            <a href="/logout" class="logout-btn">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<!-- 메인 컨텐츠 -->
+<div class="container">
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <div class="last-updated" id="lastUpdated">
+            마지막 업데이트: <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm:ss')}"></span>
+        </div>
+        <h1>⚙️ 시스템 설정 및 통계</h1>
+        <p>시스템 전체 현황을 확인하고 관리할 수 있습니다.</p>
+    </div>
+
+    <!-- 에러 메시지 -->
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+    <!-- 주요 통계 -->
+    <div class="stats-grid">
+        <!-- 사용자 통계 -->
+        <div class="stat-card user">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">전체 사용자</div>
+            <div class="stat-value" th:text="${systemStats.totalUsers}">0</div>
+            <div class="stat-detail">
+                활성: <span th:text="${systemStats.activeUsers}">0</span> |
+                비활성: <span th:text="${systemStats.inactiveUsers}">0</span>
+            </div>
+        </div>
+
+        <!-- 상품 통계 -->
+        <div class="stat-card item">
+            <div class="stat-icon">📦</div>
+            <div class="stat-label">전체 상품</div>
+            <div class="stat-value" th:text="${systemStats.totalItems}">0</div>
+            <div class="stat-detail">
+                정상: <span th:text="${systemStats.visibleItems}">0</span> |
+                블라인드: <span th:text="${systemStats.blindedItems}">0</span>
+            </div>
+        </div>
+
+        <!-- 이번 달 신규 -->
+        <div class="stat-card activity">
+            <div class="stat-icon">📈</div>
+            <div class="stat-label">이번 달 신규 사용자</div>
+            <div class="stat-value" th:text="${systemStats.newUsersThisMonth}">0</div>
+            <div class="stat-detail">
+                오늘 등록 상품: <span th:text="${systemStats.itemsAddedToday}">0</span>
+            </div>
+        </div>
+
+        <!-- 관리 로그 -->
+        <div class="stat-card database">
+            <div class="stat-icon">📋</div>
+            <div class="stat-label">관리 로그</div>
+            <div class="stat-value" th:text="${systemStats.totalAdminLogs}">0</div>
+            <div class="stat-detail">
+                이번 달: <span th:text="${systemStats.logsThisMonth}">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 카테고리별 통계 -->
+    <div class="section">
+        <h2 class="section-title">📊 카테고리별 상품 통계</h2>
+        <div class="category-stats">
+            <div class="category-item" th:each="entry : ${categoryStats}">
+                <div class="category-name" th:text="${entry.key}">카테고리</div>
+                <div class="category-count" th:text="${entry.value}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 주간 활동 통계 -->
+    <div class="section">
+        <h2 class="section-title">📅 주간 활동 통계</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">이번 주 신규 사용자</div>
+                <div class="stat-value" th:text="${weeklyStats.newUsersThisWeek}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">이번 주 신규 상품</div>
+                <div class="stat-value" th:text="${weeklyStats.newItemsThisWeek}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 최근 활동 -->
+    <div class="section">
+        <h2 class="section-title">🔔 최근 활동</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <!-- 최근 가입 사용자 -->
+            <div>
+                <h3 style="margin-bottom: 1rem; color: #2c3e50;">최근 가입 사용자</h3>
+                <ul class="recent-activity-list">
+                    <li class="activity-item" th:each="user : ${recentActivities.recentUsers}">
+                        <div class="activity-info">
+                            <div class="activity-name" th:text="${user.name}">사용자명</div>
+                            <div class="activity-detail" th:text="${user.email}">이메일</div>
+                        </div>
+                        <div class="activity-time" th:text="${#temporals.format(user.createdAt, 'MM-dd HH:mm')}">
+                            날짜
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 최근 등록 상품 -->
+            <div>
+                <h3 style="margin-bottom: 1rem; color: #2c3e50;">최근 등록 상품</h3>
+                <ul class="recent-activity-list">
+                    <li class="activity-item" th:each="item : ${recentActivities.recentItems}">
+                        <div class="activity-info">
+                            <div class="activity-name" th:text="${item.title}">상품명</div>
+                            <div class="activity-detail" th:text="${item.seller.name}">판매자</div>
+                        </div>
+                        <div class="activity-time" th:text="${#temporals.format(item.createdAt, 'MM-dd HH:mm')}">
+                            날짜
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 데이터베이스 정보 -->
+    <div class="section">
+        <h2 class="section-title">💾 데이터베이스 정보</h2>
+        <div class="db-info-grid">
+            <div class="db-info-item">
+                <div class="db-info-label">전체 레코드</div>
+                <div class="db-info-value" th:text="${dbInfo.totalRecords}">0</div>
+            </div>
+            <div class="db-info-item">
+                <div class="db-info-label">사용자 레코드</div>
+                <div class="db-info-value" th:text="${dbInfo.userRecords}">0</div>
+            </div>
+            <div class="db-info-item">
+                <div class="db-info-label">상품 레코드</div>
+                <div class="db-info-value" th:text="${dbInfo.itemRecords}">0</div>
+            </div>
+            <div class="db-info-item">
+                <div class="db-info-label">로그 레코드</div>
+                <div class="db-info-value" th:text="${dbInfo.logRecords}">0</div>
+            </div>
+        </div>
+    </div>
+    <!-- 메뉴 관리 섹션 -->
+    <div class="section">
+        <h2 class="section-title">🔗 관리자 메뉴 관리</h2>
+        <p style="color: #7f8c8d; margin-bottom: 1.5rem;">
+            관리자 페이지에 표시될 커스텀 메뉴를 추가하거나 관리할 수 있습니다.
+        </p>
+
+        <!-- 메뉴 추가 버튼 -->
+        <button class="add-menu-btn" onclick="showAddMenuModal()">➕ 새 메뉴 추가</button>
+
+        <!-- 메뉴 목록 테이블 -->
+        <table class="menu-table">
+            <thead>
+            <tr>
+                <th>순서</th>
+                <th>아이콘</th>
+                <th>메뉴명</th>
+                <th>URL</th>
+                <th>설명</th>
+                <th>상태</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+            <tbody id="menuTableBody">
+            <tr th:each="menu : ${adminMenus}">
+                <td th:text="${menu.displayOrder}">1</td>
+                <td th:text="${menu.menuIcon}">📋</td>
+                <td th:text="${menu.menuName}">메뉴명</td>
+                <td th:text="${menu.menuUrl}">/admin/custom</td>
+                <td th:text="${menu.description}">설명</td>
+                <td>
+                    <span th:class="${menu.enabled} ? 'status-active' : 'status-inactive'"
+                          th:text="${menu.enabled} ? '활성' : '비활성'">활성</span>
+                </td>
+                <td>
+                    <button class="action-btn btn-edit"
+                            th:onclick="'editMenu(' + ${menu.id} + ')'">수정</button>
+                    <button class="action-btn btn-toggle"
+                            th:onclick="'toggleMenuStatus(' + ${menu.id} + ')'">토글</button>
+                    <button class="action-btn btn-delete"
+                            th:onclick="'deleteMenu(' + ${menu.id} + ')'">삭제</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- 메뉴가 없을 때 -->
+        <div th:if="${adminMenus == null or adminMenus.isEmpty()}" class="no-data">
+            <p>등록된 커스텀 메뉴가 없습니다. 새 메뉴를 추가해보세요!</p>
+        </div>
+    </div>
+
+   <!-- 메뉴 추가/수정 모달 -->
+    <div id="menuModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeMenuModal()">&times;</span>
+            <h2 id="modalTitle">새 메뉴 추가</h2>
+            <form id="menuForm">
+                <input type="hidden" id="menuId">
+
+                <div class="form-group">
+                    <label>게시판 타입 *</label>
+                    <select id="boardType" class="form-input" required onchange="updateMenuFields()">
+                        <option value="">선택하세요</option>
+                        <option value="notice">공지사항</option>
+                        <option value="free">자유게시판</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>메뉴명</label>
+                    <input type="text" id="menuName" class="form-input" readonly
+                           style="background-color: #f8f9fa;">
+                </div>
+
+                <div class="form-group">
+                    <label>URL</label>
+                    <input type="text" id="menuUrl" class="form-input" readonly
+                           style="background-color: #f8f9fa;">
+                </div>
+
+                <div class="form-group">
+                    <label>아이콘</label>
+                    <input type="text" id="menuIcon" class="form-input" readonly
+                           style="background-color: #f8f9fa;">
+                </div>
+
+                <div class="form-group">
+                    <label>표시 순서</label>
+                    <input type="number" id="displayOrder" class="form-input"
+                           value="0" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="enabled" checked> 활성화
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeMenuModal()">취소</button>
+                    <button type="submit" class="btn-save">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 메뉴 관리 함수들
+function showAddMenuModal() {
+    document.getElementById('modalTitle').textContent = '새 게시판 추가';
+    document.getElementById('menuForm').reset();
+    document.getElementById('menuId').value = '';
+    document.getElementById('enabled').checked = true;
+    document.getElementById('boardType').value = '';
+    document.getElementById('menuName').value = '';
+    document.getElementById('menuUrl').value = '';
+    document.getElementById('menuIcon').value = '';
+    document.getElementById('menuModal').style.display = 'flex';
+}
+
+// 게시판 타입에 따라 필드 자동 업데이트
+function updateMenuFields() {
+    const boardType = document.getElementById('boardType').value;
+
+    const typeConfig = {
+        'notice': {
+            name: '공지사항',
+            url: '/board/notice',
+            icon: '📢'
+        },
+        'free': {
+            name: '자유게시판',
+            url: '/board/free',
+            icon: '💬'
+        }
+    };
+
+    if (typeConfig[boardType]) {
+        document.getElementById('menuName').value = typeConfig[boardType].name;
+        document.getElementById('menuUrl').value = typeConfig[boardType].url;
+        document.getElementById('menuIcon').value = typeConfig[boardType].icon;
+    } else {
+        document.getElementById('menuName').value = '';
+        document.getElementById('menuUrl').value = '';
+        document.getElementById('menuIcon').value = '';
+    }
+}
+
+function editMenu(menuId) {
+    // 메뉴 정보 가져오기
+    fetch('/admin/menu/' + menuId)
+        .then(response => response.json())
+        .then(menu => {
+            document.getElementById('modalTitle').textContent = '게시판 수정';
+            document.getElementById('menuId').value = menu.id;
+            document.getElementById('boardType').value = menu.boardType;
+            document.getElementById('menuName').value = menu.menuName;
+            document.getElementById('menuUrl').value = menu.menuUrl;
+            document.getElementById('menuIcon').value = menu.menuIcon;
+            document.getElementById('displayOrder').value = menu.displayOrder;
+            document.getElementById('enabled').checked = menu.enabled;
+
+            // boardType은 수정 불가
+            document.getElementById('boardType').disabled = true;
+
+            document.getElementById('menuModal').style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('메뉴 정보를 불러오는 중 오류가 발생했습니다.');
+        });
+}
+
+// 폼 제출 시 추가/수정 구분
+document.getElementById('menuForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const menuId = document.getElementById('menuId').value;
+    const boardType = document.getElementById('boardType').value;
+
+    if (!boardType) {
+        alert('게시판 타입을 선택해주세요.');
+        return;
+    }
+
+    const menuData = {
+        menuName: document.getElementById('menuName').value,
+        menuUrl: document.getElementById('menuUrl').value,
+        menuIcon: document.getElementById('menuIcon').value,
+        displayOrder: parseInt(document.getElementById('displayOrder').value) || 0,
+        description: boardType === 'notice' ? '공지사항 게시판' : '자유게시판',
+        enabled: document.getElementById('enabled').checked,
+        boardType: boardType
+    };
+
+    const url = menuId ? `/admin/menu/${menuId}/update` : '/admin/menu/add';
+    const method = 'POST';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(menuData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(menuId ? '게시판이 수정되었습니다.' : '게시판이 생성되었습니다.');
+            location.reload();
+        } else {
+            alert('오류: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('처리 중 오류가 발생했습니다.');
+    });
+});
+
+function closeMenuModal() {
+    document.getElementById('menuModal').style.display = 'none';
+    document.getElementById('boardType').disabled = false; // 다시 활성화
+}
+
+function toggleMenuStatus(menuId) {
+    if (!confirm('게시판 상태를 변경하시겠습니까?')) return;
+
+    fetch('/admin/menu/' + menuId + '/toggle', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('상태가 변경되었습니다.');
+            location.reload();
+        } else {
+            alert('오류: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('처리 중 오류가 발생했습니다.');
+    });
+}
+
+function deleteMenu(menuId) {
+    if (!confirm('정말 이 게시판을 삭제하시겠습니까?\n게시판의 모든 게시글도 함께 삭제됩니다.')) return;
+
+    fetch('/admin/menu/' + menuId + '/delete', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('게시판이 삭제되었습니다.');
+            location.reload();
+        } else {
+            alert('오류: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('처리 중 오류가 발생했습니다.');
+    });
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('menuModal');
+    if (event.target == modal) {
+        closeMenuModal();
+    }
+}
+</script>
+</body>
+</html>

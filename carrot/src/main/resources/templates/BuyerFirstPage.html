@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>구매 메뉴 (구매자 화면)</title>
+    <style>
+        :root{
+          --bg:#fff; --surface:#fff; --line:rgba(2,6,23,.08);
+          --shadow:0 6px 24px rgba(2,6,23,.06), 0 2px 6px rgba(2,6,23,.05);
+          --muted:#64748b; --text:#0f172a; --accent:#22d3ee; --accent-2:#3b82f6;
+          --ring:rgba(59,130,246,.24);
+          --ok:#10b981; --warn:#f59e0b; --danger:#ef4444;
+        }
+        *{box-sizing:border-box}
+        body{margin:0;background:var(--bg);color:var(--text);
+          font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,
+          "Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
+        header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);
+          border-bottom:1px solid var(--line);box-shadow:0 6px 20px rgba(2,6,23,.04)}
+        .bar{max-width:980px;margin:0 auto;padding:14px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+        .tag{font-weight:800;color:var(--accent-2)}
+        .container{max-width:980px;margin:24px auto 40px;padding:0 20px}
+        h1{font-size:22px;margin:0 0 8px}
+        .subtitle{font-size:13px;color:var(--muted);margin:0 0 18px}
+
+        .item-head{border:1px solid var(--line); border-radius:14px; background:var(--surface);
+          padding:12px 14px; box-shadow:var(--shadow)}
+        .item-line{font-size:16px; color:#334155; font-weight:700; display:flex; gap:8px; align-items:center; margin:0 0 6px;}
+        .item-line .muted{font-weight:600; color:#64748b}
+        .item-title{font-size:14px; color:#475569; margin-left:2px}
+
+        .offer{border:1px solid var(--line); border-radius:12px; padding:12px; display:flex; gap:12px; align-items:center; justify-content:space-between}
+        .summary{font-size:14px; color:#0f172a; font-weight:700}
+        .summary .pill-method{display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:800; margin-right:8px; border:1px solid var(--line); background:#f1f5f9}
+        .summary .muted{color:#64748b; font-weight:600}
+
+        .actions{display:flex; gap:8px}
+        .pill{background:#f1f5f9;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-weight:700;cursor:pointer}
+        .btn{border:1px solid var(--line); border-radius:10px; padding:8px 12px; cursor:pointer; font-weight:700}
+        .btn-accept{background:var(--accent-2); color:#fff; border-color:transparent}
+        .btn-reject{background:#fee2e2; color:#991b1b} /* 삭제모달 취소 버튼에서 사용 */
+        .btn-delete{background:#f8fafc; color:#0f172a}
+        .muted{color:#64748b}
+
+        /* 모달 (공통) */
+        .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(15,23,42,.36)}
+        .panel{width:min(720px,calc(100vw - 24px)); background:#fff; border-radius:14px; box-shadow:var(--shadow); border:1px solid var(--line)}
+        .panel-header{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--line)}
+        .panel-title{margin:0;font-size:18px}
+        .panel-body{padding:16px}
+        .panel-footer{padding:12px 16px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:10px}
+
+        /* 삭제 확인 모달 크기 조정 */
+        .panel.small { width:min(420px, calc(100vw - 24px)); }
+
+        .edit-summary{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px}
+        .edit-title{font-size:16px; font-weight:800}
+        .edit-sub{font-size:13px; color:#64748b}
+
+        .seg{display:inline-grid; grid-template-columns:auto auto; gap:6px; align-items:center; border:1px solid var(--line); padding:8px 10px; border-radius:999px}
+        .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px}
+        .field{display:flex; flex-direction:column; gap:6px}
+        .half{grid-column:span 1}
+        .third{grid-column:span 1}
+        .full{grid-column:1 / -1}
+        label{font-size:12px; color:#475569}
+        input[type="text"],input[type="date"],input[type="time"],input[type="number"]{
+          border:1px solid var(--line); border-radius:10px; padding:8px 10px; outline:none
+        }
+
+        .row-center{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+        .toast{position:fixed;bottom:20px;left:50%; transform:translateX(-50%); background:#111827; color:#fff; padding:10px 12px; border-radius:8px; display:none; opacity:0; transition:.2s}
+    </style>
+</head>
+<body>
+<header>
+    <div class="bar">
+        <span class="tag">BUYER</span>
+        <strong>구매자 화면</strong>
+    </div>
+</header>
+
+<div class="container">
+    <h1>구매 중인 물품</h1>
+    <p class="subtitle">내가 조건을 제안/수정할 수 있습니다.</p>
+    <div id="buyerItemsMount"></div>
+</div>
+
+<!-- 거래조건 수정 모달 -->
+<div class="modal" id="editModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="panel">
+        <div class="panel-header">
+            <h3 class="panel-title" id="modalTitle">거래조건 수정</h3>
+            <button class="close-x" id="btnCloseModal" type="button">닫기</button>
+        </div>
+        <div class="panel-body">
+            <div class="edit-summary">
+                <div class="edit-left">
+                    <span class="edit-title" id="edTitle">물품 - 조건 수정</span>
+                    <span class="edit-sub" id="edSub"></span>
+                </div>
+            </div>
+
+            <!-- 거래 방식 토글 -->
+            <div class="seg" id="methodSeg">
+                <input type="radio" id="mDirect" name="mMethod">
+                <label for="mDirect">직거래</label>
+                <input type="radio" id="mShip" name="mMethod">
+                <label for="mShip">배송</label>
+            </div>
+
+            <!-- 입력 필드 -->
+            <div class="grid">
+                <!-- 직거래 -->
+                <div class="field half" id="fldMeetDate">
+                    <label for="meetDate">만남 날짜</label>
+                    <input type="date" id="meetDate"/>
+                </div>
+                <div class="field half" id="fldMeetTime">
+                    <label for="meetTime">만남 시간</label>
+                    <input type="time" id="meetTime"/>
+                </div>
+                <div class="field full" id="fldMeetPlace">
+                    <label for="meetPlace">만남 장소</label>
+                    <input type="text" id="meetPlace" placeholder="예: 대구 반월당역 14번 출구 앞"/>
+                </div>
+
+                <!-- 배송 -->
+                <div class="field third" id="fldShipDate">
+                    <label for="shipDate">배송(수령) 희망 날짜</label>
+                    <input type="date" id="shipDate"/>
+                </div>
+                <div class="field third" id="fldShipRecipient">
+                    <label for="shipRecipient">수신인</label>
+                    <input type="text" id="shipRecipient" placeholder="예: 홍길동"/>
+                </div>
+                <div class="field full" id="fldShipAddr1">
+                    <label for="shipAddr1">도로명 주소</label>
+                    <input type="text" id="shipAddr1" placeholder="예: 대구광역시 중구 중앙대로 394"/>
+                </div>
+                <div class="field full" id="fldShipAddr2">
+                    <label for="shipAddr2">상세 주소</label>
+                    <input type="text" id="shipAddr2" placeholder="예: 101동 1203호"/>
+                </div>
+
+                <!-- 가격 (단일) -->
+                <div class="field third" id="fldPrice">
+                    <label for="price">가격</label>
+                    <input type="number" id="price" min="0" step="100"/>
+                </div>
+
+                <!-- 레이아웃 채움 -->
+                <div class="field third" aria-hidden="true" style="visibility:hidden">
+                    <label>&nbsp;</label>
+                    <input type="text" tabindex="-1" />
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <button class="pill" id="btnApply" type="button">변경 적용</button>
+                <span class="muted" style="font-size:12px;color:#6b7280">변경 후 요약이 즉시 업데이트됩니다.</span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-accept" id="btnSendToSeller" type="button">판매자에게 보내기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 삭제 확인 모달 (커스텀) -->
+<div class="modal" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+    <div class="panel small">
+        <div class="panel-header">
+            <h3 class="panel-title" id="deleteTitle">확인</h3>
+        </div>
+        <div class="panel-body">
+            <p style="margin:0; font-size:15px;">거래를 삭제하시겠습니까?</p>
+        </div>
+        <div class="panel-footer">
+            <div class="row-center">
+                <button class="btn btn-reject" id="btnDeleteCancel" type="button">취소</button>
+                <button class="btn btn-accept" id="btnDeleteConfirm" type="button">삭제</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 서버에서 주입 -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+      window.__BUYER_ITEMS__ = JSON.parse(/*[[${buyerItemsJson}]]*/ "[]");
+    /*]]>*/
+</script>
+
+<script>
+    const $ = (s)=>document.querySelector(s);
+    const el = (tag, cls, txt)=>{ const n=document.createElement(tag); if(cls) n.className=cls; if(txt!=null) n.textContent=txt; return n; };
+    const toast=(msg, ok=false)=>{
+      const t=$('#toast'); t.textContent=msg; t.style.display='block';
+      t.style.background = ok ? '#065f46' : '#111827';
+      t.style.opacity='1'; setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=> t.style.display='none',200); }, 1600);
+    };
+
+    let currentEdit = null;
+    let pendingDelete = { id: null, sectionEl: null };
+
+    function fmtDateShort(iso){
+      if(!iso) return '';
+      const d=new Date(iso);
+      if (Number.isNaN(d.getTime())) return iso;
+      const m=d.getMonth()+1, day=d.getDate();
+      return `${m}/${day}`;
+    }
+    function priceText(v){ return (v==null||v==='') ? '' : `${Number(v).toLocaleString()}원`; }
+    function methodLabel(method){ return method === 'shipping' ? '배송' : '직거래'; }
+
+    /* 라디오 전환 시 즉시 폼 토글 */
+    function toggleFieldsByMethod(method){
+      const isDirect = (method==='direct');
+      $('#mDirect').checked = isDirect;
+      $('#mShip').checked   = !isDirect;
+
+      // 직거래 필드
+      $('#fldMeetDate').style.display  = isDirect ? '' : 'none';
+      $('#fldMeetTime').style.display  = isDirect ? '' : 'none';
+      $('#fldMeetPlace').style.display = isDirect ? '' : 'none';
+
+      // 배송 필드
+      const dispShip = isDirect ? 'none' : '';
+      $('#fldShipDate').style.display     = dispShip;
+      $('#fldShipRecipient').style.display= dispShip;
+      $('#fldShipAddr1').style.display    = dispShip;
+      $('#fldShipAddr2').style.display    = dispShip;
+    }
+
+    /** 요약 문자열 생성: [직거래/배송] 날짜 시간 · 장소/지역 · 수신인 · 금액 */
+    function summaryText(offer){
+      const m = methodLabel(offer.method);
+      let parts = [];
+
+      if (offer.method === 'direct'){
+        const d=offer.payload?.direct?.date, t=offer.payload?.direct?.time, p=offer.payload?.direct?.place||'';
+        const when = `${fmtDateShort(d||'')}${t?(' '+t):''}`.trim();
+        if (when) parts.push(when);
+        if (p) parts.push(p);
+      } else {
+        const wd   = offer.payload?.shipping?.wishDate;
+        if (wd) parts.push(`${fmtDateShort(wd)}(희망)`);
+        const addr = offer.payload?.shipping?.address || '';
+        const area = addr ? addr.split(' ').slice(0,2).join(' ') : '';
+        if (area) parts.push(area);
+        const rcpt = offer.payload?.shipping?.recipient || '';
+        if (rcpt) parts.push(`수신인:${rcpt}`);
+      }
+      const pr = priceText(offer.payload?.price);
+      if (pr) parts.push(pr);
+
+      return `<span class="pill-method">${m}</span>${parts.join(' · ') || '<span class="muted">조건 없음</span>'}`;
+    }
+
+    function itemActions(item, offer, summaryEl){
+      const wrap = el('div', 'actions');
+      const btnEdit   = el('button', 'pill', '거래 조건 수정');
+      const btnDelete = el('button', 'btn btn-delete', '거래 삭제');
+
+      btnDelete.addEventListener('click', ()=> openDeleteModal(item.id, wrap.closest('.item-head')));
+      btnEdit  .addEventListener('click', ()=> openEditModal(item, offer, summaryEl));
+
+      wrap.append(btnDelete, btnEdit);
+      return wrap;
+    }
+
+    function itemBlock(item, offers){
+      const section = el('section','item-head');
+
+      const line = el('div','item-line');
+      const left = el('div', '');
+      const right= el('div','');
+
+      const idTxt   = el('span','muted', `물품 #${item.id}`);
+      const title   = el('span','item-title', item.title ? `· ${item.title}` : '');
+      left.append(idTxt, title);
+
+      line.append(left, el('span','',''), right);
+      section.append(line);
+
+      const offer = (offers && offers[0]) || null;
+      if (offer) {
+        const row = el('div','offer');
+
+        const summaryEl = el('div','summary');
+        summaryEl.innerHTML = summaryText(offer);
+
+        const actions = itemActions(item, offer, summaryEl);
+
+        row.append(summaryEl, actions);
+        section.append(row);
+      }
+      return section;
+    }
+
+    /* ===== 삭제 모달 ===== */
+    function openDeleteModal(id, sectionEl){
+      pendingDelete.id = id;
+      pendingDelete.sectionEl = sectionEl;
+      $('#deleteModal').style.display='flex';
+    }
+    function closeDeleteModal(){
+      pendingDelete.id = null;
+      pendingDelete.sectionEl = null;
+      $('#deleteModal').style.display='none';
+    }
+    $('#btnDeleteCancel').addEventListener('click', closeDeleteModal);
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDeleteModal(); });
+    document.getElementById('btnDeleteConfirm').addEventListener('click', async ()=>{
+      if(!pendingDelete.id) return;
+      try{
+        const res = await fetch(`/api/agreements/${pendingDelete.id}`, { method: 'DELETE' });
+        if(!res.ok) throw new Error('삭제 실패');
+        pendingDelete.sectionEl?.remove();
+        toast('삭제 완료', true);
+      }catch(e){ toast(e.message||'삭제 에러'); }
+      finally{ closeDeleteModal(); }
+    });
+
+    /* ===== 수정 모달 ===== */
+    function openEditModal(item, offer, summaryEl){
+      currentEdit = { item, offer, summaryEl };
+
+      $('#modalTitle').textContent = `물품 ${item.id}${item.title?` · ${item.title}`:''} - 거래조건 수정`;
+      $('#edTitle').textContent    = `물품 ${item.id}${item.title?` · ${item.title}`:''}`;
+      $('#edSub').textContent      = '';
+
+      // 초기 표시
+      toggleFieldsByMethod(offer.method);
+
+      // 라디오 전환 즉시 UI 토글
+      $('#mDirect').onchange = ()=> toggleFieldsByMethod('direct');
+      $('#mShip').onchange   = ()=> toggleFieldsByMethod('shipping');
+
+      if(offer.method==='direct'){
+        $('#meetDate').value  = offer?.payload?.direct?.date || '';
+        $('#meetTime').value  = offer?.payload?.direct?.time || '';
+        $('#meetPlace').value = offer?.payload?.direct?.place || '';
+
+        // 배송 필드 초기화
+        $('#shipDate').value     = '';
+        $('#shipRecipient').value= '';
+        $('#shipAddr1').value    = '';
+        $('#shipAddr2').value    = '';
+      }else{
+        $('#shipDate').value      = offer?.payload?.shipping?.wishDate || '';
+        $('#shipRecipient').value = offer?.payload?.shipping?.recipient || '';
+        const addr = offer?.payload?.shipping?.address || '';
+        // 간단 분리: 앞부분(2~3어절)을 도로명, 나머지를 상세로
+        if (addr) {
+          const parts = addr.split(' ');
+          if (parts.length >= 3){
+            $('#shipAddr1').value = parts.slice(0,3).join(' ');
+            $('#shipAddr2').value = parts.slice(3).join(' ');
+          } else {
+            $('#shipAddr1').value = addr;
+            $('#shipAddr2').value = '';
+          }
+        } else {
+          $('#shipAddr1').value = '';
+          $('#shipAddr2').value = '';
+        }
+
+        // 직거래 필드 초기화
+        $('#meetDate').value  = '';
+        $('#meetTime').value  = '';
+        $('#meetPlace').value = '';
+      }
+
+      $('#price').value = (offer.payload?.price ?? '') === null ? '' : (offer.payload?.price ?? '');
+      $('#editModal').style.display='flex';
+    }
+    function closeEdit(){ currentEdit=null; $('#editModal').style.display='none'; }
+    $('#btnCloseModal').addEventListener('click', closeEdit);
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeEdit(); });
+
+    // 변경 적용(프론트 미리보기만 반영)
+    document.getElementById('btnApply').addEventListener('click', ()=>{
+      if(!currentEdit){ toast('대상 거래가 없습니다'); return; }
+      const {offer, summaryEl} = currentEdit;
+
+      // 라디오 상태 기준
+      offer.method = $('#mDirect').checked ? 'direct' : 'shipping';
+
+      if(offer.method==='direct'){
+        offer.payload.direct = offer.payload.direct || {};
+        offer.payload.direct.date  = $('#meetDate').value || null;
+        offer.payload.direct.time  = $('#meetTime').value || null;
+        offer.payload.direct.place = $('#meetPlace').value || null;
+
+        // 배송쪽 비움
+        offer.payload.shipping = offer.payload.shipping || {};
+        offer.payload.shipping.wishDate  = offer.payload.shipping.wishDate ?? null;
+        offer.payload.shipping.address   = offer.payload.shipping.address ?? null;
+        offer.payload.shipping.recipient = offer.payload.shipping.recipient ?? null;
+      }else{
+        const addr = [$('#shipAddr1').value, $('#shipAddr2').value].filter(Boolean).join(' ').trim() || null;
+
+        offer.payload.shipping = offer.payload.shipping || {};
+        offer.payload.shipping.wishDate  = $('#shipDate').value || null;
+        offer.payload.shipping.address   = addr;
+        offer.payload.shipping.recipient = $('#shipRecipient').value || null;
+
+        // 직거래쪽 비움
+        offer.payload.direct = offer.payload.direct || {};
+        offer.payload.direct.date = offer.payload.direct.time = offer.payload.direct.place = null;
+      }
+
+      const pr = $('#price').value;
+      offer.payload.price = pr ? Number(pr) : null;
+
+      summaryEl.innerHTML = summaryText(offer);
+      toast('변경 사항을 적용했습니다.', true);
+    });
+
+    // 판매자에게 보내기 → 서버 PATCH 호출 (DB 반영)
+    document.getElementById('btnSendToSeller').addEventListener('click', async ()=>{
+      if(!currentEdit){ toast('대상 거래가 없습니다'); return; }
+      const { item, offer } = currentEdit;
+
+      const method = $('#mDirect').checked ? 'direct' : 'shipping';
+      const addr   = method==='shipping'
+        ? ([$('#shipAddr1').value, $('#shipAddr2').value].filter(Boolean).join(' ').trim() || null)
+        : null;
+
+      const payload = {
+        method,
+        direct: method==='direct' ? {
+          date: $('#meetDate').value || null,
+          time: $('#meetTime').value || null,
+          place: $('#meetPlace').value || null
+        } : null,
+        shipping: method==='shipping' ? {
+          wishDate: $('#shipDate').value || null,
+          address:  addr,
+          recipient: $('#shipRecipient').value || null
+        } : null,
+        price: (()=>{
+          const v = $('#price').value;
+          return v ? Number(v) : null;
+        })()
+      };
+
+      try{
+        const res = await fetch(`/api/agreements/${item.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error('서버 저장 실패');
+        await res.json();
+
+        // 메모리 동기화 + 요약 갱신
+        offer.method = method;
+        if(method==='direct'){
+          offer.payload.direct = payload.direct;
+          offer.payload.shipping = { ...(offer.payload.shipping||{}), wishDate: null, address: null, recipient: null };
+        } else {
+          offer.payload.shipping = payload.shipping;
+          offer.payload.direct = { date:null, time:null, place:null };
+        }
+        offer.payload.price = payload.price;
+
+        currentEdit.summaryEl.innerHTML = summaryText(offer);
+        toast('판매자에게 전송했고 DB에 반영되었습니다.', true);
+        closeEdit();
+      }catch(e){
+        toast(e.message || '전송 실패');
+      }
+    });
+
+    /* mount: 구매자 목록만 렌더 */
+    function boot(){
+      const buyerMount = $('#buyerItemsMount'); buyerMount.innerHTML='';
+
+      const buyerItems  = Array.isArray(window.__BUYER_ITEMS__) ? window.__BUYER_ITEMS__ : [];
+
+      if(buyerItems.length){
+        buyerItems.forEach(it=>{
+          const first = (it.offers && it.offers[0]) ? it.offers[0] : null;
+          if (first) buyerMount.appendChild(itemBlock(it, [first]));
+        });
+      }else{
+        buyerMount.appendChild(el('div','muted','아직 항목이 없습니다.'));
+      }
+    }
+    document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구매희망상품 등록 - 중고마켓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff6b35;
+            text-decoration: none;
+        }
+
+        .logo::before {
+            content: "♻️";
+            margin-right: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 107, 53, 0.1);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .form-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .form-subtitle {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #ff6b35;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-help {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .price-input-wrapper {
+            position: relative;
+        }
+
+        .price-input-wrapper::after {
+            content: "원 이하";
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        .price-input {
+            padding-right: 4.5rem !important;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            border: none;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .alert-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .info-box {
+            background: #e8f4fd;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #3498db;
+            margin-bottom: 2rem;
+        }
+
+        .info-title {
+            font-weight: 600;
+            color: #2980b9;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-text {
+            color: #34495e;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-card {
+                margin: 1rem;
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo">중고마켓</a>
+        <div class="nav-links">
+            <span>안녕하세요, <strong th:text="${username}">사용자</strong>님!</span>
+            <a href="/">홈</a>
+            <a href="/wanted/list">구매희망</a>
+            <a href="/search">검색</a>
+            <a href="/logout">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<!-- 구매희망상품 등록 폼 -->
+<div class="container">
+    <div class="form-card">
+        <h1 class="form-title">구매희망상품 등록하기</h1>
+        <p class="form-subtitle">찾고 있는 상품을 등록하면 판매자들이 연락드릴 수 있어요</p>
+
+        <!-- 안내 박스 -->
+        <div class="info-box">
+            <div class="info-title">💡 구매희망상품이란?</div>
+            <div class="info-text">
+                • 사고 싶은 상품을 미리 등록해두는 서비스입니다<br>
+                • 해당 상품을 판매하려는 분들이 연락을 드릴 수 있어요<br>
+                • 최대 희망 가격을 설정하여 예산 범위 내에서 구매할 수 있습니다
+            </div>
+        </div>
+
+        <!-- 에러/성공 메시지 -->
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <form action="/wanted/register" method="post" id="wantedForm">
+            <!-- 상품 제목 -->
+            <div class="form-group">
+                <label for="title">찾고 있는 상품 제목 <span class="required">*</span></label>
+                <input type="text" id="title" name="title"
+                       placeholder="예: 아이폰 13 pro 128GB 구매희망합니다"
+                       maxlength="100" required>
+                <div class="form-help">5글자 이상 100글자 이하로 입력해주세요.</div>
+            </div>
+
+            <!-- 상품 설명 -->
+            <div class="form-group">
+                <label for="description">상세 조건 및 설명 <span class="required">*</span></label>
+                <textarea id="description" name="description"
+                          placeholder="원하시는 상품의 구체적인 조건을 작성해주세요&#10;- 희망하는 색상, 용량, 모델명 등&#10;- 거래 희망 지역 및 시간&#10;- 상품 상태 요구사항&#10;- 기타 특이사항"
+                          maxlength="2000" required></textarea>
+                <div class="form-help">10글자 이상 2000글자 이하로 입력해주세요.</div>
+            </div>
+
+            <!-- 최대 희망가격과 카테고리 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="maxPrice">최대 희망 가격 <span class="required">*</span></label>
+                    <div class="price-input-wrapper">
+                        <input type="number" id="maxPrice" name="maxPrice" class="price-input"
+                               placeholder="0" min="0" max="999999999" required>
+                    </div>
+                    <div class="form-help">이 가격 이하로 구매를 희망합니다.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">카테고리 <span class="required">*</span></label>
+                    <select id="category" name="category" required>
+                        <option value="">카테고리를 선택하세요</option>
+                        <option value="electronics">가전제품</option>
+                        <option value="clothes">의류</option>
+                        <option value="misc">기타 및 잡화</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 거래 지역 -->
+            <div class="form-group">
+                <label for="location">거래 희망 지역 <span class="required">*</span></label>
+                <input type="text" id="location" name="location"
+                       placeholder="예: 서울 강남구, 경기 성남시 등"
+                       maxlength="100" required>
+                <div class="form-help">직거래를 희망하시는 지역을 입력해주세요.</div>
+            </div>
+
+            <button type="submit" class="submit-btn">구매희망상품 등록하기</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 폼 유효성 검사
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('wantedForm');
+        const title = document.getElementById('title');
+        const description = document.getElementById('description');
+        const maxPrice = document.getElementById('maxPrice');
+        const category = document.getElementById('category');
+        const location = document.getElementById('location');
+
+        // 가격 입력 시 숫자만 허용
+        maxPrice.addEventListener('input', function() {
+            let value = this.value.replace(/[^0-9]/g, '');
+            this.value = value;
+        });
+
+        // 폼 제출 시 유효성 검사
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            let errorMessage = '';
+
+            // 제목 검사
+            if (title.value.trim().length < 5) {
+                isValid = false;
+                errorMessage = '상품 제목은 5글자 이상 입력해주세요.';
+            }
+
+            // 설명 검사
+            if (description.value.trim().length < 10) {
+                isValid = false;
+                errorMessage = '상품 설명은 10글자 이상 입력해주세요.';
+            }
+
+            // 가격 검사
+            if (maxPrice.value === '' || parseInt(maxPrice.value) <= 0) {
+                isValid = false;
+                errorMessage = '올바른 최대 희망가격을 입력해주세요.';
+            }
+
+            // 카테고리 검사
+            if (category.value === '') {
+                isValid = false;
+                errorMessage = '카테고리를 선택해주세요.';
+            }
+
+            // 지역 검사
+            if (location.value.trim() === '') {
+                isValid = false;
+                errorMessage = '거래 희망 지역을 입력해주세요.';
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                alert(errorMessage);
+            }
+        });
+
+        // 문자 수 실시간 체크
+        title.addEventListener('input', function() {
+            if (this.value.length > 100) {
+                this.value = this.value.substring(0, 100);
+            }
+        });
+
+        description.addEventListener('input', function() {
+            if (this.value.length > 2000) {
+                this.value = this.value.substring(0, 2000);
+            }
+        });
+    });
+</script>
+</body>
+</html>

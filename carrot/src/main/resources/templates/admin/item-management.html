@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품 관리 - 관리자 페이지</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #e74c3c;
+            text-decoration: none;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .back-btn, .logout-btn {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+        }
+
+        .back-btn:hover, .logout-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .filters {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .filter-select, .search-input {
+            padding: 0.75rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            min-width: 150px;
+        }
+
+        .search-btn, .reset-btn {
+            background: #3498db;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1.7rem;
+        }
+
+        .reset-btn {
+            background: #95a5a6;
+        }
+
+        .content-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .items-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            position: sticky;
+            top: 0;
+        }
+
+        .item-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .item-title {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .price {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .status-visible {
+            background: #27ae60;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+        }
+
+        .status-blinded {
+            background: #f39c12;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+        }
+
+        .status-deleted {
+            background: #e74c3c;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+        }
+
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 0.3rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-blind {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-restore {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-view {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-blind:hover { background: #e67e22; }
+        .btn-delete:hover { background: #c0392b; }
+        .btn-restore:hover { background: #229954; }
+        .btn-view:hover { background: #2980b9; }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 바 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/admin" class="logo">관리자 - 상품 관리</a>
+        <div class="navbar-right">
+            <span th:text="'안녕하세요, ' + ${user.name} + ' 관리자님'">안녕하세요, 관리자님</span>
+            <a href="/admin" class="back-btn">대시보드</a>
+            <a href="/logout" class="logout-btn">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<!-- 메인 컨텐츠 -->
+<div class="container">
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h1>📦 상품 관리</h1>
+        <p>등록된 상품들을 조회하고 관리할 수 있습니다.</p>
+    </div>
+
+    <!-- 통계 정보 -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-number" th:text="${totalItems} ?: '0'">0</div>
+            <div class="stat-label">전체 상품</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" th:text="${visibleItems} ?: '0'">0</div>
+            <div class="stat-label">정상 상품</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" th:text="${blindedItems} ?: '0'">0</div>
+            <div class="stat-label">블라인드 상품</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" th:text="${deletedItems} ?: '0'">0</div>
+            <div class="stat-label">삭제 상품</div>
+        </div>
+    </div>
+
+    <!-- 에러 메시지 표시 -->
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+    <!-- 필터링 -->
+    <div class="filters">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>상태 필터</label>
+                <select class="filter-select" id="statusFilter">
+                    <option value="">전체 상태</option>
+                    <option value="VISIBLE">정상</option>
+                    <option value="BLINDED">블라인드</option>
+                    <option value="DELETED">삭제됨</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>카테고리</label>
+                <select class="filter-select" id="categoryFilter">
+                    <option value="">전체 카테고리</option>
+                    <option value="전자제품">전자제품</option>
+                    <option value="의류">의류</option>
+                    <option value="도서">도서</option>
+                    <option value="가구">가구</option>
+                    <option value="기타">기타</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>검색</label>
+                <input type="text" class="search-input" placeholder="상품명, 설명으로 검색..." id="searchInput">
+            </div>
+
+            <button class="search-btn" onclick="applyFilters()">필터 적용</button>
+            <button class="reset-btn" onclick="resetFilters()">초기화</button>
+        </div>
+    </div>
+
+    <!-- 컨텐츠 섹션 -->
+    <div class="content-section">
+        <!-- 상품 테이블 -->
+        <div th:if="${items != null and !items.isEmpty()}">
+            <table class="items-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>이미지</th>
+                    <th>상품명</th>
+                    <th>가격</th>
+                    <th>카테고리</th>
+                    <th>판매자</th>
+                    <th>상태</th>
+                    <th>조회수</th>
+                    <th>등록일</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${items}">
+                    <td th:text="${item.id}">1</td>
+                    <td>
+                        <img th:src="${item.imageUrl} ?: '/images/no-image.png'"
+                             class="item-image" alt="상품 이미지">
+                    </td>
+                    <td>
+                        <div class="item-title" th:text="${item.title}" th:title="${item.title}">
+                            상품 제목
+                        </div>
+                    </td>
+                    <td class="price" th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + '원'">
+                        10,000원
+                    </td>
+                    <td th:text="${item.category}">전자제품</td>
+                    <td th:text="${item.seller.name}">판매자</td>
+                    <td>
+                                <span th:class="'status-' + ${#strings.toLowerCase(item.moderationStatus.name())}"
+                                      th:text="${item.moderationStatus.name() == 'VISIBLE'} ? '정상' :
+                                                (${item.moderationStatus.name() == 'BLINDED'} ? '블라인드' : '삭제됨')">
+                                    정상
+                                </span>
+                    </td>
+                    <td th:text="${item.viewCount}">0</td>
+                    <td th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd')}">2024-01-01</td>
+                    <td>
+                        <!-- 정상 상품인 경우 -->
+                        <div th:if="${item.moderationStatus.name() == 'VISIBLE'}">
+                            <button class="action-btn btn-view" th:onclick="'viewItem(' + ${item.id} + ')'">
+                                보기
+                            </button>
+                            <button class="action-btn btn-blind" th:onclick="'blindItem(' + ${item.id} + ')'">
+                                블라인드
+                            </button>
+                            <button class="action-btn btn-delete" th:onclick="'deleteItem(' + ${item.id} + ')'">
+                                삭제
+                            </button>
+                        </div>
+
+                        <!-- 블라인드/삭제된 상품인 경우 -->
+                        <div th:if="${item.moderationStatus.name() != 'VISIBLE'}">
+                            <button class="action-btn btn-view" th:onclick="'viewItem(' + ${item.id} + ')'">
+                                보기
+                            </button>
+                            <button class="action-btn btn-restore" th:onclick="'restoreItem(' + ${item.id} + ')'">
+                                복원
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 데이터가 없을 때 -->
+        <div th:if="${items == null or items.isEmpty()}" class="no-data">
+            <p>등록된 상품이 없습니다.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function applyFilters() {
+        const status = document.getElementById('statusFilter').value;
+        const category = document.getElementById('categoryFilter').value;
+        const search = document.getElementById('searchInput').value;
+
+        let url = '/admin/products?';
+        const params = new URLSearchParams();
+
+        if (status) params.append('status', status);
+        if (category) params.append('category', category);
+        if (search) params.append('search', search);
+
+        window.location.href = url + params.toString();
+    }
+
+    function resetFilters() {
+        window.location.href = '/admin/products';
+    }
+
+    function viewItem(itemId) {
+        window.open('/item/' + itemId, '_blank');
+    }
+
+    function blindItem(itemId) {
+        const reason = prompt('블라인드 처리 사유를 입력하세요:');
+        if (!reason) return;
+
+        moderateItem(itemId, 'blind', reason);
+    }
+
+    function deleteItem(itemId) {
+        const reason = prompt('삭제 처리 사유를 입력하세요:');
+        if (!reason) return;
+
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+
+        moderateItem(itemId, 'delete', reason);
+    }
+
+    function restoreItem(itemId) {
+        if (!confirm('상품을 복원하시겠습니까?')) return;
+
+        moderateItem(itemId, 'restore', '복원');
+    }
+
+    function moderateItem(itemId, action, reason) {
+        fetch('/admin/item/' + itemId + '/moderate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'action=' + action + '&reason=' + encodeURIComponent(reason)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('오류: ' + data.error);
+            } else {
+                alert('처리가 완료되었습니다.');
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('처리 중 오류가 발생했습니다.');
+        });
+    }
+
+    // 엔터키로 검색
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            applyFilters();
+        }
+    });
+</script>
+</body>
+</html>

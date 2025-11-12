@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 관리 - 관리자 페이지</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #e74c3c;
+            text-decoration: none;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .back-btn, .logout-btn {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+        }
+
+        .back-btn:hover, .logout-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .search-box {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-btn {
+            background: #3498db;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .users-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-active {
+            background: #27ae60;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+        }
+
+        .status-inactive {
+            background: #e74c3c;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+        }
+
+        .role-admin {
+            background: #f39c12;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+        }
+
+        .role-user {
+            background: #3498db;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-toggle {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-toggle:hover {
+            background: #e67e22;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .status-banned {
+            background: #95a5a6;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 바 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/admin" class="logo">관리자 - 사용자 관리</a>
+        <div class="navbar-right">
+            <span th:text="'안녕하세요, ' + ${user.name} + ' 관리자님'">안녕하세요, 관리자님</span>
+            <a href="/admin" class="back-btn">대시보드</a>
+            <a href="/logout" class="logout-btn">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<!-- 메인 컨텐츠 -->
+<div class="container">
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h1>사용자 관리</h1>
+        <p>등록된 사용자들을 조회하고 관리할 수 있습니다.</p>
+    </div>
+
+    <!-- 에러 메시지 표시 -->
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+    <!-- 컨텐츠 섹션 -->
+    <div class="content-section">
+        <!-- 검색 박스 -->
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="사용자명, 이메일, 이름으로 검색..." id="searchInput">
+            <button class="search-btn" onclick="searchUsers()">검색</button>
+        </div>
+
+        <!-- 사용자 테이블 -->
+        <div th:if="${users != null and !users.isEmpty()}">
+            <table class="users-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>아이디</th>
+                    <th>이름</th>
+                    <th>이메일</th>
+                    <th>전화번호</th>
+                    <th>역할</th>
+                    <th>상태</th>
+                    <th>가입일</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="userItem : ${users}">
+                    <td th:text="${userItem.id}">1</td>
+                    <td th:text="${userItem.username}">testuser</td>
+                    <td th:text="${userItem.name}">홍길동</td>
+                    <td th:text="${userItem.email}">test@example.com</td>
+                    <td th:text="${userItem.phone}">010-0000-0000</td>
+                    <td>
+                        <span th:class="${userItem.admin} ? 'role-admin' : 'role-user'"
+                              th:text="${userItem.admin} ? 'ADMIN' : 'USER'">USER</span>
+                    </td>
+                    <td>
+                        <span th:class="${userItem.enabled} ? 'status-active' : 'status-inactive'"
+                              th:text="${userItem.enabled} ? '활성' : '비활성'">활성</span>
+                    </td>
+                    <td th:text="${#temporals.format(userItem.createdAt, 'yyyy-MM-dd')}">2024-01-01</td>
+                    <td>
+                        <button class="action-btn btn-toggle"
+                                th:onclick="'toggleUserStatus(' + ${userItem.id} + ')'"
+                                th:text="${userItem.enabled} ? '비활성화' : '활성화'">
+                            토글
+                        </button>
+                        <!-- 관리자가 아닌 경우에만 추방 버튼 표시 -->
+                        <button class="action-btn btn-delete"
+                                th:onclick="'banUser(' + ${userItem.id} + ')'"
+                                th:if="${!userItem.admin}">
+                            추방
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 데이터가 없을 때 -->
+        <div th:if="${users == null or users.isEmpty()}" class="no-data">
+            <p>등록된 사용자가 없습니다.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function searchUsers() {
+        const keyword = document.getElementById('searchInput').value;
+        if (keyword.trim()) {
+            window.location.href = '/admin/users?search=' + encodeURIComponent(keyword);
+        } else {
+            window.location.href = '/admin/users';
+        }
+    }
+
+    function toggleUserStatus(userId) {
+        if (!confirm('사용자 상태를 변경하시겠습니까?')) {
+            return;
+        }
+
+        fetch('/admin/user/' + userId + '/toggle-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('오류: ' + data.error);
+            } else {
+                alert('상태가 변경되었습니다.');
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('상태 변경 중 오류가 발생했습니다.');
+        });
+    }
+
+    function banUser(userId) {
+        const reason = prompt('추방 사유를 입력해주세요:');
+        if (!reason || reason.trim() === '') {
+            alert('추방 사유를 입력해야 합니다.');
+            return;
+        }
+
+        if (!confirm('정말 이 사용자를 추방하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+            return;
+        }
+
+        fetch('/admin/user/' + userId + '/ban', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'reason=' + encodeURIComponent(reason)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('오류: ' + data.error);
+            } else {
+                alert('사용자가 추방되었습니다.');
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('추방 처리 중 오류가 발생했습니다.');
+        });
+    }
+
+    // 엔터키로 검색
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchUsers();
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${item.title} + ' - 중고마켓'">상품 상세 - 중고마켓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff6b35;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 107, 53, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .breadcrumb a {
+            color: #666;
+            text-decoration: none;
+            margin-right: 0.5rem;
+        }
+
+        .breadcrumb a:hover {
+            color: #ff6b35;
+        }
+
+        .item-detail {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .item-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            padding: 3rem;
+        }
+
+        .item-image-section {
+            position: relative;
+        }
+
+        .item-image {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: #666;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-status {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-sell {
+            background: #27ae60;
+        }
+
+        .status-reserved {
+            background: #f39c12;
+        }
+
+        .status-sold {
+            background: #95a5a6;
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .item-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            line-height: 1.3;
+        }
+
+        .item-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #ff6b35;
+        }
+
+        .item-meta-info {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #ff6b35;
+            border: 2px solid #ff6b35;
+        }
+
+        .btn-secondary:hover {
+            background: #ff6b35;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-purchase {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-purchase:hover {
+            background: linear-gradient(135deg, #229954, #27ae60);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .item-body {
+            padding: 0 3rem 3rem;
+        }
+
+        .item-description {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ff6b35;
+        }
+
+        .description-content {
+            color: #555;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            white-space: pre-wrap;
+        }
+
+        .seller-info {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+        }
+
+        .seller-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .seller-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .seller-details h3 {
+            color: #333;
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .seller-details p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .contact-seller {
+            width: 100%;
+            background: #27ae60;
+            color: white;
+        }
+
+        .contact-seller:hover {
+            background: #229954;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            border: none;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .alert-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        /* 구매 희망하기 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+
+        @media (max-width: 768px) {
+            .item-header {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                padding: 2rem;
+            }
+
+            .item-meta-info {
+                grid-template-columns: 1fr;
+            }
+
+            .item-actions {
+                flex-direction: column;
+            }
+
+            .item-body {
+                padding: 0 2rem 2rem;
+            }
+        }
+        .contact-seller {
+        width: 100%;
+        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .contact-seller:hover {
+        background: linear-gradient(135deg, #7c3aed, #4f46e5);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+    }
+
+    </style>
+</head>
+<body>
+<!-- 네비게이션 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo">♻️ 중고마켓</a>
+        <div class="nav-links">
+            <span>안녕하세요, <strong th:text="${username}">사용자</strong>님!</span>
+            <a href="/">홈</a>
+            <a href="/item/list">상품 목록</a>
+            <a href="/wanted/list">구매희망</a>
+            <a href="/wishlist">관심상품</a>
+            <a href="/search">검색</a>
+            <a href="/item/register">상품 등록</a>
+            <a href="/purchase/my-requests">구매 희망</a>
+            <a href="/logout">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 브레드크럼 -->
+    <div class="breadcrumb">
+        <a href="/">홈</a> >
+        <a href="/item/list">상품 목록</a> >
+        <span th:text="${item.categoryName}">카테고리</span> >
+        <strong th:text="${item.title}">상품명</strong>
+    </div>
+
+    <!-- 에러/성공 메시지 -->
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <!-- 상품 상세 정보 -->
+    <div class="item-detail">
+        <div class="item-header">
+            <!-- 상품 이미지 -->
+            <div class="item-image-section">
+                <div class="item-image">
+                    <img th:if="${item.imageUrl}"
+                         th:src="@{${item.imageUrl}}"
+                         alt="상품 이미지"
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                    <span th:unless="${item.imageUrl}">📦</span>
+                    <div class="item-status"
+                         th:classappend="${item.sellStatus.name() == 'SELL' ? 'status-sell' :
+                                        (item.sellStatus.name() == 'RESERVED' ? 'status-reserved' : 'status-sold')}"
+                         th:text="${item.sellStatus.name() == 'SELL' ? '판매중' :
+                                  (item.sellStatus.name() == 'RESERVED' ? '예약중' : '판매완료')}">
+                        판매중
+                    </div>
+                </div>
+            </div>
+
+            <!-- 상품 정보 -->
+            <div class="item-info">
+                <h1 class="item-title" th:text="${item.title}">상품 제목</h1>
+                <div class="item-price" th:text="${item.formattedPrice}">가격</div>
+
+                <!-- 메타 정보 -->
+                <div class="item-meta-info">
+                    <div class="meta-item">
+                        <span class="meta-icon">📍</span>
+                        <span th:text="${item.location}">거래 지역</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-icon">🏷️</span>
+                        <span th:text="${item.categoryName}">카테고리</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-icon">👀</span>
+                        <span>조회 <span th:text="${item.viewCount}">0</span>회</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-icon">⏰</span>
+                        <span th:text="${item.timeAgo}">등록 시간</span>
+                    </div>
+                </div>
+
+                <!-- 액션 버튼 -->
+                <div th:unless="${isOwner}">
+                    <div class="item-actions">
+                        <button class="btn btn-secondary" id="wishlistBtn" onclick="toggleWishlist()">
+                            <span id="wishlistIcon">🤍</span> <span id="wishlistText">찜하기</span>
+                        </button>
+                        <button class="btn btn-purchase" onclick="openPurchaseModal()">
+                            🛒 구매 희망하기
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 판매자 본인인 경우 -->
+                <div th:if="${isOwner}">
+                    <div class="item-actions">
+                        <a href="#" class="btn btn-edit" onclick="alert('상품 수정 기능은 5단계에서 구현됩니다')">
+                            ✏️ 상품 수정
+                        </a>
+                        <a href="#" class="btn btn-secondary" onclick="alert('상품 삭제 기능은 5단계에서 구현됩니다')">
+                            🗑️ 삭제
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="item-body">
+            <!-- 상품 설명 -->
+            <div class="item-description">
+                <h2 class="section-title">상품 정보</h2>
+                <div class="description-content" th:text="${item.description}">
+                    상품 설명이 여기에 표시됩니다.
+                </div>
+            </div>
+
+            <!-- 판매자 정보 -->
+            <div class="seller-info">
+                <h2 class="section-title">판매자 정보</h2>
+                <div class="seller-header">
+                    <div class="seller-avatar" th:text="${item.seller.name.substring(0,1)}">판</div>
+                    <div class="seller-details">
+                        <h3 th:text="${item.seller.name}">판매자명</h3>
+                        <p th:text="'@' + ${item.seller.username}">@username</p>
+                    </div>
+                </div>
+                <!-- 박정대 파일 -->
+                <div th:unless="${isOwner}">
+                    <button class="btn contact-seller"
+                            th:onclick="|window.location.href='/seller?id=${item.id}'|">
+                        📞 판매자에게 연락하기
+                    </button>
+                </div>
+                <div th:if="${isOwner}">
+                    <p style="color: #666; text-align: center; padding: 1rem;">내가 등록한 상품입니다</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 구매 희망하기 모달 -->
+<div id="purchaseModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closePurchaseModal()">&times;</span>
+        <h2>구매 희망 신청</h2>
+        <form id="purchaseForm">
+            <div class="form-group">
+                <label for="offerPrice">희망 가격 (선택사항)</label>
+                <input type="number" id="offerPrice" placeholder="원하시는 가격을 입력하세요" min="0">
+                <small>입력하지 않으면 판매 가격으로 신청됩니다</small>
+            </div>
+            <div class="form-group">
+                <label for="message">구매 희망 메시지 *</label>
+                <textarea id="message" placeholder="판매자에게 전할 메시지를 입력하세요&#10;예: 안녕하세요! 이 상품 구매를 희망합니다. 직거래 가능한가요?" required></textarea>
+            </div>
+            <div class="item-actions">
+                <button type="button" class="btn btn-secondary" onclick="closePurchaseModal()">취소</button>
+                <button type="submit" class="btn btn-purchase">구매 희망 신청</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let itemId = [[${item.id}]];  // 수정됨
+let isWishlisted = false;
+
+// 페이지 로드시 찜 상태 확인
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Item ID:', itemId);  // 디버깅용
+    checkWishlistStatus();
+});
+
+function checkWishlistStatus() {
+    fetch(`/wishlist/status/${itemId}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Wishlist status:', data);  // 디버깅용
+            isWishlisted = data.isWishlisted;
+            updateWishlistButton();
+        })
+        .catch(error => {
+            console.error('Status check error:', error);
+        });
+}
+
+function toggleWishlist() {
+    fetch(`/wishlist/toggle/${itemId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Toggle response:', data);  // 디버깅용
+        if (data.success) {
+            isWishlisted = data.isWishlisted;
+            updateWishlistButton();
+            alert(data.message);
+        } else {
+            alert(data.message || '오류가 발생했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Toggle error:', error);
+        alert('찜하기 처리 중 오류가 발생했습니다.');
+    });
+}
+
+function updateWishlistButton() {
+    const icon = document.getElementById('wishlistIcon');
+    const text = document.getElementById('wishlistText');
+    const btn = document.getElementById('wishlistBtn');
+
+    if (isWishlisted) {
+        icon.textContent = '❤️';
+        text.textContent = '찜 취소';
+        btn.style.background = '#e74c3c';
+        btn.style.color = 'white';
+        btn.style.border = '2px solid #e74c3c';
+    } else {
+        icon.textContent = '🤍';
+        text.textContent = '찜하기';
+        btn.style.background = 'white';
+        btn.style.color = '#ff6b35';
+        btn.style.border = '2px solid #ff6b35';
+    }
+}
+
+// 구매 희망하기 모달 관련 함수들
+function openPurchaseModal() {
+    document.getElementById('purchaseModal').style.display = 'block';
+}
+
+function closePurchaseModal() {
+    document.getElementById('purchaseModal').style.display = 'none';
+    document.getElementById('purchaseForm').reset();
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('purchaseModal');
+    if (event.target == modal) {
+        closePurchaseModal();
+    }
+}
+
+// 구매 희망 신청 처리
+document.getElementById('purchaseForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const message = document.getElementById('message').value.trim();
+    const offerPrice = document.getElementById('offerPrice').value;
+
+    if (!message) {
+        alert('구매 희망 메시지를 입력해주세요.');
+        return;
+    }
+
+    const params = new URLSearchParams();
+    params.append('title', '구매희망: ' + document.querySelector('.item-title').textContent);
+    params.append('description', message);
+    params.append('maxPrice', offerPrice || [[${item.price}]]);
+    params.append('category', '[[${item.category}]]');
+    params.append('location', '[[${item.location}]]');
+
+    fetch('/wanted/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params.toString()
+    })
+    .then(response => {
+        if (response.redirected) {
+            // 리다이렉트 성공
+            alert('구매 희망 신청이 완료되었습니다!');
+            window.location.href = '/wanted/list';  // ⭐ wanted-detail 대신 list로 이동
+            return;
+        }
+        if (response.ok) {
+            alert('구매 희망 신청이 완료되었습니다!');
+            closePurchaseModal();
+            window.location.href = '/wanted/list';  // ⭐ 수정
+        } else {
+            return response.text().then(text => {
+                console.error('Error response:', text);
+                alert('구매 희망 신청 중 오류가 발생했습니다.');
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('구매 희망 신청 중 오류가 발생했습니다.');
+    });
+});
+</script>
+</body>
+</html>

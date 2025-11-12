@@ -1,0 +1,251 @@
+<!-- src/main/resources/templates/board/board-list.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${boardName}">게시판</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #e74c3c;
+            text-decoration: none;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+        }
+
+        .write-btn {
+            background: #27ae60;
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .write-btn:hover {
+            background: #229954;
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-btn {
+            background: #3498db;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .board-list {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .board-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .board-table th,
+        .board-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .board-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .board-title {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .board-title:hover {
+            text-decoration: underline;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo" th:text="${boardName}">게시판</a>
+        <div class="navbar-right">
+            <a href="/" class="nav-btn">메인으로</a>
+            <a th:if="${user.isAdmin()}" href="/admin" class="nav-btn">관리자</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 1. 페이지 헤더의 글쓰기 버튼 -->
+    <div class="page-header">
+        <h1 th:text="${boardName}">게시판</h1>
+        <a th:if="${boardType != 'notice' or user.isAdmin()}"
+           th:href="@{/board/{type}/write(type=${boardType})}"
+           class="write-btn">
+            글쓰기
+        </a>
+    </div>
+            <!-- 공지사항 권한 없을 때만 표시 -->
+    <div th:if="${boardType == 'notice' and !user.isAdmin()}"
+         style="margin-top: 1rem; padding: 1rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
+        <strong>ℹ️ 안내</strong><br>
+        공지사항은 관리자만 작성할 수 있습니다.
+    </div>
+        </div>
+    </div>
+
+<div class="search-box">
+    <input type="text" class="search-input" placeholder="제목으로 검색..." id="searchInput">
+    <button class="search-btn" onclick="searchBoard()">검색</button>
+</div>
+
+<div class="board-list">
+    <table class="board-table" th:if="${boards != null and !boards.isEmpty()}">
+            <thead>
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>조회수</th>
+                <th>작성일</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="board, stat : ${boards}">
+                <td th:text="${stat.count}">1</td>
+                <td>
+                    <a th:href="@{'/board/' + ${boardType} + '/' + ${board.id}}"
+                       class="board-title" th:text="${board.title}">제목</a>
+                </td>
+                <td th:text="${board.author.name}">작성자</td>
+                <td th:text="${board.viewCount}">0</td>
+                <td th:text="${#temporals.format(board.createdAt, 'yyyy-MM-dd')}">2024-01-01</td>
+            </tr>
+            </tbody>
+        </table>
+
+    <div class="no-data" th:if="${boards == null or boards.isEmpty()}">
+        <p>등록된 게시글이 없습니다.</p>
+    </div>
+
+    </div>
+</div>
+
+<script>
+    function searchBoard() {
+        const keyword = document.getElementById('searchInput').value;
+        if (keyword.trim()) {
+            window.location.href = '/board/[[${boardType}]]?search=' + encodeURIComponent(keyword);
+        } else {
+            window.location.href = '/board/[[${boardType}]]';
+        }
+    }
+
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchBoard();
+        }
+    });
+</script>
+</body>
+</html>

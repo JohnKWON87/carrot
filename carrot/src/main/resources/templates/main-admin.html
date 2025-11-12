@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지 - 중고마켓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #e74c3c;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo::before {
+            content: "⚙️";
+            font-size: 1.5rem;
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .welcome-msg {
+            color: #ecf0f1;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .welcome-section h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 2.2rem;
+        }
+
+        .welcome-section p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .admin-card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .admin-card h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .admin-card p {
+            color: #7f8c8d;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .admin-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .admin-btn.danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .admin-btn.danger:hover {
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+        }
+
+        .admin-btn.success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .admin-btn.success:hover {
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
+        }
+
+        .stats-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .stats-title {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 바 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <div>
+            <a href="/" class="logo">관리자 페이지</a>
+            <span class="admin-badge">ADMINISTRATOR</span>
+        </div>
+        <div class="navbar-right">
+            <span class="welcome-msg" th:text="'안녕하세요, ' + ${user.name} + ' 관리자님'">안녕하세요, 관리자님</span>
+            <a href="/logout" class="logout-btn">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<!-- 메인 컨텐츠 -->
+<div class="container">
+    <!-- 환영 섹션 -->
+    <div class="welcome-section">
+        <h1>🛠️ 관리자 대시보드</h1>
+        <p>중고거래 사이트의 모든 기능을 관리할 수 있습니다.</p>
+    </div>
+
+    <!-- 관리 기능 그리드 -->
+    <div class="admin-grid">
+        <div class="admin-card">
+            <div class="admin-card-icon">👥</div>
+            <h3>사용자 관리</h3>
+            <p>회원 목록 조회, 계정 활성화/비활성화, 권한 관리 등 사용자 관련 모든 기능을 관리합니다.</p>
+            <a href="/admin/users" class="admin-btn">사용자 관리</a>
+        </div>
+
+        <div class="admin-card">
+            <div class="admin-card-icon">📦</div>
+            <h3>상품 관리</h3>
+            <p>등록된 상품들을 관리하고, 부적절한 상품을 삭제하거나 수정할 수 있습니다.</p>
+            <a href="/admin/products" class="admin-btn">상품 관리</a>
+        </div>
+
+<!--        <div class="admin-card">-->
+<!--            <div class="admin-card-icon">📊</div>-->
+<!--            <h3>거래 내역</h3>-->
+<!--            <p>사이트 내 모든 거래 내역을 조회하고 문제가 있는 거래를 관리합니다.</p>-->
+<!--            <a href="/admin/transactions" class="admin-btn">거래 내역</a>-->
+<!--        </div>-->
+
+<!--        <div class="admin-card">-->
+<!--            <div class="admin-card-icon">📝</div>-->
+<!--            <h3>신고 관리</h3>-->
+<!--            <p>사용자들의 신고 내용을 검토하고 적절한 조치를 취할 수 있습니다.</p>-->
+<!--            <a href="/admin/reports" class="admin-btn danger">신고 관리</a>-->
+<!--        </div>-->
+
+<!--        <div class="admin-card">-->
+<!--            <div class="admin-card-icon">📈</div>-->
+<!--            <h3>통계 분석</h3>-->
+<!--            <p>사이트 방문자 수, 거래량, 매출 등 다양한 통계를 확인할 수 있습니다.</p>-->
+<!--            <a href="/admin/statistics" class="admin-btn success">통계 보기</a>-->
+<!--        </div>-->
+
+        <div class="admin-card">
+            <div class="admin-card-icon">⚙️</div>
+            <h3>시스템 설정</h3>
+            <p>사이트 기본 설정, 카테고리 관리, 공지사항 등을 관리합니다.</p>
+            <a href="/admin/settings" class="admin-btn">시스템 설정</a>
+        </div>
+
+        <!-- 관리 로그 카드 추가 -->
+<!--        <div class="admin-card">-->
+<!--            <div class="admin-card-icon">📋</div>-->
+<!--            <h3>관리 로그</h3>-->
+<!--            <p>관리자의 모든 활동 기록을 확인하고 추적할 수 있습니다.</p>-->
+<!--            <a href="/admin/logs" class="admin-btn">로그 보기</a>-->
+<!--        </div>-->
+    </div>
+
+    <!-- 커뮤니티 게시판 섹션 추가 -->
+    <div class="stats-section" style="margin-bottom: 2rem;" th:if="${customMenus != null and !customMenus.isEmpty()}">
+        <h2 class="stats-title">💬 커뮤니티 게시판</h2>
+        <div class="admin-grid">
+            <div class="admin-card" th:each="menu : ${customMenus}">
+                <div class="admin-card-icon" th:text="${menu.menuIcon}">📋</div>
+                <h3 th:text="${menu.menuName}">게시판</h3>
+                <p th:text="${menu.description}">설명</p>
+                <a th:href="@{${menu.menuUrl}}" class="admin-btn">바로가기</a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 통계 섹션 -->
+    <div class="stats-section">
+        <h2 class="stats-title">📊 사이트 현황</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number" th:text="${totalUsers}">0</div>
+                <div class="stat-label">전체 회원 수</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" th:text="${totalItems}">0</div>
+                <div class="stat-label">등록된 상품</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" th:text="${todayItems}">0</div>
+                <div class="stat-label">오늘 등록된 상품</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" th:text="${activeItems}">0</div>
+                <div class="stat-label">판매중인 상품</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

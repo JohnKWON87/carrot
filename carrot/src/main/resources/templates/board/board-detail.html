@@ -1,0 +1,151 @@
+<!-- src/main/resources/templates/board/board-detail.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${board.title}">게시글</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #e74c3c;
+            text-decoration: none;
+        }
+
+        .nav-btn {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .board-detail {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .board-header {
+            border-bottom: 2px solid #e1e8ed;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .board-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .board-info {
+            display: flex;
+            gap: 2rem;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .board-content {
+            line-height: 1.8;
+            color: #2c3e50;
+            min-height: 300px;
+            margin-bottom: 2rem;
+            white-space: pre-wrap;
+        }
+
+        .board-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            padding-top: 2rem;
+            border-top: 2px solid #e1e8ed;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-list {
+            background: #3498db;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo" th:text="${boardName}">게시판</a>
+        <a th:href="@{'/board/' + ${boardType}}" class="nav-btn">목록으로</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="board-detail">
+        <div class="board-header">
+            <h1 class="board-title" th:text="${board.title}">제목</h1>
+            <div class="board-info">
+                <span>작성자: <strong th:text="${board.author.name}">작성자</strong></span>
+                <span>작성일: <strong th:text="${#temporals.format(board.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01</strong></span>
+                <span>조회수: <strong th:text="${board.viewCount}">0</strong></span>
+            </div>
+        </div>
+
+        <div class="board-content" th:text="${board.content}">
+            내용
+        </div>
+
+        <div class="board-actions">
+            <a th:href="@{'/board/' + ${boardType}}" class="btn btn-list">목록</a>
+            <form th:if="${user != null and (user.id == board.author.id or user.admin)}"
+                  th:action="@{'/board/' + ${boardType} + '/' + ${board.id} + '/delete'}"
+                  method="post"
+                  onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                <button type="submit" class="btn btn-delete">삭제</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

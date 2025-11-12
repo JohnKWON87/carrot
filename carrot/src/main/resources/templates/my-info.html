@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <title>내 정보 관리</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        :root{--border:#e5e7eb; --muted:#6b7280; --danger:#b91c1c; --ok:#065f46; --bg:#f5f7fb; --ink:#111;}
+        *{box-sizing:border-box}
+        body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,Arial,sans-serif;color:#0f172a}
+        .container{max-width:760px;margin:40px auto;padding:0 16px}
+        h1{margin:0 0 16px 0}
+        form{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:0 6px 20px rgba(0,0,0,.05)}
+        .row{display:grid;grid-template-columns:160px 1fr;gap:12px;align-items:center;margin-bottom:12px}
+        .row label{font-weight:600}
+        .row .col{display:flex;flex-direction:column}
+        input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px}
+        input[readonly]{background:#f8fafc;color:#64748b}
+        .hint{font-size:12px;color:var(--muted);margin-top:4px}
+        .error{font-size:12px;color:var(--danger);margin-top:4px}
+        .alert{padding:10px 12px;border-radius:10px;margin-bottom:12px;border:1px solid}
+        .alert.success{background:#ecfdf5;color:var(--ok);border-color:#a7f3d0}
+        .alert.danger{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+        .actions{display:flex;justify-content:flex-end;margin-top:16px;gap:8px}
+        .btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:10px;border:0;background:#111;color:#fff;font-weight:700;cursor:pointer;font-size:14px;line-height:1;}
+        .btn:hover{opacity:.9}
+        hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>내 정보 관리</h1>
+
+    <div th:if="${successMessage}" class="alert success" th:text="${successMessage}">저장되었습니다.</div>
+    <div th:if="${errorMessage}" class="alert danger"   th:text="${errorMessage}">오류가 발생했습니다.</div>
+
+    <form th:action="@{/my-info}" th:object="${form}" method="post" id="myInfoForm">
+        <!-- 현재 프로젝트는 CSRF 비활성화(개발용)라 토큰 불필요 -->
+
+        <!-- ✅ 저장 후 돌아갈 경로: 값이 있을 때만 전송 -->
+        <input type="hidden" name="returnTo"
+               th:if="${(returnTo != null and !#strings.isEmpty(returnTo)) or (form != null and form.returnTo != null and !#strings.isEmpty(form.returnTo))}"
+               th:value="${returnTo != null ? returnTo : form.returnTo}"/>
+
+        <div class="row">
+            <label>아이디</label>
+            <input th:field="*{username}" readonly/>
+        </div>
+
+        <div class="row">
+            <label>이메일 <span style="color:#dc2626">*</span></label>
+            <div class="col">
+                <input th:field="*{email}" placeholder="email@example.com" required/>
+                <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <label>전화번호</label>
+            <input th:field="*{phone}" placeholder="010-0000-0000"/>
+        </div>
+
+        <hr/>
+
+        <h3 style="margin:0 0 10px 0;">비밀번호 변경 (선택)</h3>
+
+        <div class="row">
+            <label>현재 비밀번호</label>
+            <div class="col">
+                <input type="password" th:field="*{currentPassword}" placeholder="현재 비밀번호"/>
+                <div class="hint">비밀번호를 바꿀 때만 입력하세요.</div>
+                <div class="error" th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <label>새 비밀번호</label>
+            <input type="password" th:field="*{newPassword}" placeholder="새 비밀번호"/>
+        </div>
+
+        <div class="row">
+            <label>새 비밀번호 확인</label>
+            <div class="col">
+                <input type="password" th:field="*{newPasswordConfirm}" placeholder="새 비밀번호 확인"/>
+                <div class="error" th:if="${#fields.hasErrors('newPasswordConfirm')}" th:errors="*{newPasswordConfirm}"></div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <!-- ✅ returnTo가 있을 때만 ‘돌아가기’ 버튼 노출 -->
+            <a th:if="${(returnTo != null and !#strings.isEmpty(returnTo)) or (form != null and form.returnTo != null and !#strings.isEmpty(form.returnTo))}"
+               th:href="${returnTo != null ? returnTo : form.returnTo}"
+               class="btn" role="button">돌아가기</a>
+
+            <button type="submit" class="btn">저장하기</button>
+        </div>
+    </form>
+
+</div>
+
+<script>
+    // 클라이언트 측 간단 검증(선택)
+    (function () {
+      const form = document.getElementById('myInfoForm');
+      if (!form) return;
+      form.addEventListener('submit', function (e) {
+        const np = form.querySelector('[name="newPassword"]').value.trim();
+        const nc = form.querySelector('[name="newPasswordConfirm"]').value.trim();
+        const cp = form.querySelector('[name="currentPassword"]').value.trim();
+
+        if (np.length > 0) {
+          if (np !== nc) { alert('새 비밀번호와 확인이 일치하지 않습니다.'); e.preventDefault(); return; }
+          if (cp.length === 0) { alert('비밀번호 변경 시 현재 비밀번호가 필요합니다.'); e.preventDefault(); return; }
+          if (np.length < 8) { alert('새 비밀번호는 8자 이상을 권장합니다.'); e.preventDefault(); return; }
+        }
+      });
+    })();
+</script>
+</body>
+</html>

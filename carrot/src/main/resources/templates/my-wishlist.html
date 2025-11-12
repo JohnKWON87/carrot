@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 관심상품 - 중고마켓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff6b35;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 107, 53, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .page-title {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff6b35;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .filter-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn.active {
+            background: #ff6b35;
+            color: white;
+            border-color: #ff6b35;
+        }
+
+        .filter-btn:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            padding-right: 3rem;
+            border: 2px solid #eee;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff6b35;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+        }
+
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .wishlist-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .wishlist-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #666;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .item-status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-sell {
+            background: #27ae60;
+        }
+
+        .status-reserved {
+            background: #f39c12;
+        }
+
+        .status-sold {
+            background: #95a5a6;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .wishlist-card:hover .remove-btn {
+            opacity: 1;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+
+        .item-content {
+            padding: 1.5rem;
+        }
+
+        .item-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .item-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 1rem;
+        }
+
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+
+        .wishlist-date {
+            font-size: 0.8rem;
+            color: #999;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-text {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .browse-btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .browse-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            border: none;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .alert-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                justify-content: center;
+            }
+
+            .stats-section {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            .wishlist-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 내비게이션 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo">♻️ 중고마켓</a>
+        <div class="nav-links">
+            <span>안녕하세요, <strong th:text="${username}">사용자</strong>님!</span>
+            <a href="/">홈</a>
+            <a href="/item/list">상품 목록</a>
+            <a href="/myinfo">내 정보수정</a>
+            <a href="/search">검색</a>
+            <a href="/logout">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h1 class="page-title">내 관심상품</h1>
+        <p>찜한 상품들을 한 곳에서 확인하고 관리하세요</p>
+    </div>
+
+    <!-- 에러/성공 메시지 -->
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <!-- 통계 정보 -->
+    <div class="stats-section" th:if="${wishlistItems != null and !wishlistItems.isEmpty()}">
+        <div class="stat-item">
+            <div class="stat-number" th:text="${totalWishCount}">0</div>
+            <div class="stat-label">전체 관심상품</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" th:text="${sellCount}">0</div>
+            <div class="stat-label">판매중인 상품</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" th:text="${avgPrice != null ? #numbers.formatDecimal(avgPrice, 0, 0) + '원' : '0원'}">0원</div>
+            <div class="stat-label">평균 가격</div>
+        </div>
+    </div>
+
+    <!-- 필터 섹션 -->
+    <div class="filter-section" th:if="${wishlistItems != null and !wishlistItems.isEmpty()}">
+        <div class="filter-row">
+            <div class="filter-group">
+                <a href="/wishlist" class="filter-btn" th:classappend="${currentCategory == 'all' ? 'active' : ''}">전체</a>
+                <a href="/wishlist?category=electronics" class="filter-btn" th:classappend="${currentCategory == 'electronics' ? 'active' : ''}">가전제품</a>
+                <a href="/wishlist?category=clothes" class="filter-btn" th:classappend="${currentCategory == 'clothes' ? 'active' : ''}">의류</a>
+                <a href="/wishlist?category=misc" class="filter-btn" th:classappend="${currentCategory == 'misc' ? 'active' : ''}">기타</a>
+            </div>
+            <form action="/wishlist" method="get" class="search-box">
+                <input type="hidden" name="category" th:value="${currentCategory}">
+                <input type="text" name="keyword" class="search-input"
+                       placeholder="관심상품 검색..." th:value="${currentKeyword}">
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 관심상품 목록 -->
+    <div th:if="${wishlistItems != null and !wishlistItems.isEmpty()}">
+        <div class="wishlist-grid">
+            <div class="wishlist-card" th:each="wishlist : ${wishlistItems}">
+                <div class="item-image" th:onclick="'location.href=\'/item/\' + ' + ${wishlist.item.id}">
+                    📦
+                    <div class="item-status"
+                         th:classappend="${wishlist.item.sellStatus.name() == 'SELL' ? 'status-sell' :
+                                        (wishlist.item.sellStatus.name() == 'RESERVED' ? 'status-reserved' : 'status-sold')}"
+                         th:text="${wishlist.item.sellStatus.name() == 'SELL' ? '판매중' :
+                                  (wishlist.item.sellStatus.name() == 'RESERVED' ? '예약중' : '판매완료')}">
+                        판매중
+                    </div>
+                    <button class="remove-btn"
+                            th:onclick="'event.stopPropagation(); removeFromWishlist(' + ${wishlist.item.id} + ')'"
+                            title="관심상품에서 제거">
+                        ✕
+                    </button>
+                </div>
+                <div class="item-content">
+                    <h3 class="item-title" th:text="${wishlist.item.title}">상품 제목</h3>
+                    <div class="item-price" th:text="${wishlist.item.formattedPrice}">가격</div>
+                    <div class="item-meta">
+                        <div>📍 <span th:text="${wishlist.item.location}">위치</span></div>
+                        <div>❤️ <span th:text="${wishlist.item.wishCount}">0</span></div>
+                    </div>
+                    <div class="wishlist-date" th:text="'찜한 날짜: ' + ${wishlist.timeAgo}">찜한 날짜</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 빈 상태 -->
+    <div th:if="${wishlistItems == null or wishlistItems.isEmpty()}" class="empty-state">
+        <div class="empty-icon">💝</div>
+        <h2 class="empty-title">관심상품이 없습니다</h2>
+        <p class="empty-text">마음에 드는 상품을 찜해보세요!</p>
+        <a href="/item/list" class="browse-btn">상품 둘러보기</a>
+    </div>
+</div>
+
+<script>
+    // 관심상품에서 제거
+    function removeFromWishlist(itemId) {
+        if (confirm('이 상품을 관심상품에서 제거하시겠습니까?')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/wishlist/remove/${itemId}`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
+</body>
+</html>

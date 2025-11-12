@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>구매희망 상세 - 중고마켓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+        }
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: #333;
+        }
+        .nav-links a {
+            margin-left: 2rem;
+            text-decoration: none;
+            color: #666;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover {
+            color: #4CAF50;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .detail-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .status-active {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status-matched {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+        .status-cancelled {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .price {
+            font-size: 1.5rem;
+            color: #4CAF50;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        .meta-info {
+            display: flex;
+            gap: 2rem;
+            margin: 1rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .description {
+            margin: 2rem 0;
+            line-height: 1.6;
+            color: #555;
+        }
+        .btn-back {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-top: 2rem;
+            transition: background-color 0.3s;
+        }
+        .btn-back:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="/" class="logo">♻️ 중고마켓</a>
+        <div class="nav-links">
+            <span>안녕하세요, <strong th:text="${username}">사용자</strong>님!</span>
+            <a href="/">홈</a>
+            <a href="/item/list">상품목록</a>
+            <a href="/wanted/list">구매희망목록</a>
+            <a href="/logout">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="detail-card">
+        <!-- 상태 배지 -->
+        <div th:class="${'status-badge status-' +
+                           (wantedItem.wantedStatus.name() == 'ACTIVE' ? 'active' :
+                           (wantedItem.wantedStatus.name() == 'MATCHED' ? 'matched' : 'cancelled'))}"
+             th:text="${wantedItem.wantedStatus.name() == 'ACTIVE' ? '구매희망중' :
+                          (wantedItem.wantedStatus.name() == 'MATCHED' ? '매칭됨' : '취소됨')}">
+            구매희망중
+        </div>
+
+        <!-- 제목 -->
+        <h1 th:text="${wantedItem.title}">구매희망 제목</h1>
+
+        <!-- 가격 -->
+        <div class="price" th:text="${wantedItem.formattedMaxPrice} + ' 이하'">최대 희망가격</div>
+
+        <!-- 메타 정보 -->
+        <div class="meta-info">
+            <div>📍 <span th:text="${wantedItem.location}">위치</span></div>
+            <div>👀 조회 <span th:text="${wantedItem.viewCount}">0</span></div>
+            <div>❤️ 관심 <span th:text="${wantedItem.interestCount}">0</span></div>
+            <div th:text="${wantedItem.timeAgo}">시간</div>
+        </div>
+
+        <!-- 상세 설명 -->
+        <div class="description">
+            <h3>상세 설명</h3>
+            <p th:text="${wantedItem.description}">구매희망 상세 설명</p>
+        </div>
+
+        <!-- 작성자 정보 (필요시) -->
+        <div class="meta-info">
+            <div>작성자: <span th:text="${wantedItem.buyer.username}">작성자</span></div>
+        </div>
+
+        <!-- 뒤로가기 버튼 -->
+        <a href="/wanted/list" class="btn-back">목록으로 돌아가기</a>
+    </div>
+</div>
+</body>
+</html>
