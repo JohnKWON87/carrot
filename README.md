@@ -8,7 +8,7 @@
 사용자 간 안전한 중고거래를 위한 다양한 기능을 제공하며, 관리자 시스템을 통해 효율적인 플랫폼 운영이 가능합니다.
 
 - **개발 기간**: 2025.9월 24일 ~ 2025.10월 1일
-- **개발 인원**: 1팀 프로젝트 (총인원 5명)
+- **개발 인원**: 1팀 프로젝트 (총인원 5명, 팀원)
 - **담당 역할**: 백엔드 개발 / 관리자 시스템 구현 
 
 ## 🛠 기술 스택
@@ -123,7 +123,7 @@ CREATE DATABASE carrot_db;
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/carrot_db
 spring.datasource.username=root
-spring.datasource.password=본인비밀번호
+spring.datasource.password=1234
 
 # 파일 업로드 경로 설정
 file.upload-dir=uploads/images
